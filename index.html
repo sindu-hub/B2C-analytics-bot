@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>seQura — CRM Segment Bot</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  :root {
+    --green:#05C2A5;--green-app:#21CFAC;--green-light:#CBFFFE;--green-pale:#E6FAF8;
+    --white:#F5F5F7;--gray-light:#DEDEDE;--gray-mid:#8D8D8D;--black:#1C1C1C;
+    --purple:#7B6FE8;--purple-pale:#EDEAFF;--blue-teal:#0BAEC8;
+    --orange:#F5823A;--orange-pale:#FEF0E8;
+    --bg:#F5F5F7;--bg2:#FFFFFF;--bg3:#EAEAEA;
+    --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
+    --text:#1C1C1C;--muted:#8D8D8D;--muted2:#5A5A5A;
+    --seg0:#8D8D8D;--seg1:#05C2A5;--seg2:#0BAEC8;--seg3:#7B6FE8;
+    --r:12px;--font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;}
+  .shell{display:grid;grid-template-columns:260px 1fr;grid-template-rows:52px 1fr;min-height:100vh;}
+  .topbar{grid-column:1/-1;background:var(--black);display:flex;align-items:center;padding:0 20px;gap:12px;}
+  .tlogo{font-size:15px;font-weight:700;color:var(--green-app);letter-spacing:-.02em;}
+  .tsep{width:1px;height:18px;background:rgba(255,255,255,0.15);}
+  .ttitle{font-size:12px;color:rgba(255,255,255,0.4);}
+  .tstatus{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:rgba(255,255,255,0.3);}
+  .sdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.18);}
+  .sdot.on{background:var(--green-app);box-shadow:0 0 6px var(--green-app);}
+  .sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:20px 0;overflow-y:auto;}
+  .sbs{padding:0 14px;margin-bottom:22px;}
+  .sbl{font-size:10px;font-family:var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;padding:0 2px;}
+  .uz{border:1.5px dashed var(--gray-light);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;margin-bottom:8px;background:var(--bg);}
+  .uz:hover{border-color:var(--green);background:var(--green-pale);}
+  .uz.loaded{border-color:var(--green);border-style:solid;background:var(--green-pale);}
+  .uz.drag{border-color:var(--green);background:var(--green-light);}
+  .ui{font-size:18px;margin-bottom:3px;}.ul{font-size:12px;color:var(--muted2);font-weight:500;}
+  .us{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
+  .uok{font-size:10px;color:var(--green);font-family:var(--mono);margin-top:3px;display:none;}
+  input[type=file]{display:none;}
+  .gobtn{width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:background .15s;margin-top:8px;}
+  .gobtn:hover{background:var(--green-app);}.gobtn:disabled{opacity:.35;cursor:not-allowed;}
+  .mstat{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:6px;}
+  .msl{font-size:10px;color:var(--muted);font-family:var(--mono);}.msv{font-size:18px;font-weight:600;}
+  .spill{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;margin-bottom:2px;cursor:pointer;transition:background .15s;font-size:13px;}
+  .spill:hover{background:var(--bg);}.spill.on{background:var(--bg);border:1px solid var(--border2);}
+  .sdotc{width:8px;height:8px;border-radius:50%;flex-shrink:0;}.sname{flex:1;}
+  .sn{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .main{background:var(--bg);overflow-y:auto;display:flex;flex-direction:column;}
+  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;gap:10px;}
+  .eico{width:60px;height:60px;border-radius:18px;background:var(--green-pale);border:1.5px solid var(--green-light);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:6px;}
+  .etit{font-size:22px;font-weight:700;letter-spacing:-.03em;}.esub{font-size:14px;color:var(--muted2);max-width:380px;line-height:1.65;}
+  .steps{display:flex;gap:12px;margin-top:24px;}
+  .step{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;width:150px;text-align:left;}
+  .stepn{font-family:var(--mono);font-size:11px;color:var(--green);margin-bottom:6px;font-weight:500;}
+  .stept{font-size:12px;color:var(--muted2);line-height:1.5;}
+  .rw{padding:20px 24px;}
+  .vtabs{display:flex;gap:2px;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;flex-wrap:wrap;}
+  .vt{padding:6px 16px;font-size:13px;cursor:pointer;color:var(--muted);border-radius:7px;font-weight:500;transition:background .15s,color .15s;}
+  .vt:hover{color:var(--text);}.vt.on{background:var(--green);color:#fff;}
+  .vt.pp-tab.on{background:var(--orange);color:#fff;}
+  .sgcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+  .sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+  .scl{font-size:10px;color:var(--muted);margin-bottom:4px;font-family:var(--mono);}
+  .scv{font-size:28px;font-weight:700;margin-bottom:1px;letter-spacing:-.03em;}
+  .scs{font-size:11px;color:var(--muted);}
+  .scbar{height:3px;border-radius:2px;margin-top:12px;opacity:.35;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+  .four{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+  .ct{font-size:10px;font-family:var(--mono);letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
+  .hbr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .hbl{font-size:12px;color:var(--muted2);width:110px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hbt{flex:1;background:var(--bg3);border-radius:2px;height:6px;overflow:hidden;}
+  .hbf{height:100%;border-radius:2px;}.hbv{font-size:11px;font-family:var(--mono);color:var(--muted);width:40px;text-align:right;}
+  .aibox{background:var(--green-pale);border:1px solid rgba(5,194,165,.2);border-left:3px solid var(--green);border-radius:var(--r);padding:16px 18px;margin-bottom:12px;}
+  .aibox.orange{background:var(--orange-pale);border-color:rgba(245,130,58,.2);border-left-color:var(--orange);}
+  .aihd{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .aitag{font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.08em;text-transform:uppercase;font-weight:500;}
+  .aitag.orange{color:var(--orange);}
+  .aist{font-size:11px;color:var(--muted);font-family:var(--mono);}
+  .aibody{font-size:13px;color:var(--muted2);line-height:1.75;}.aibody strong{color:var(--text);font-weight:600;}
+
+  /* PP OPPORTUNITY */
+  .pp-hero{background:var(--black);border-radius:var(--r);padding:24px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
+  .pp-kpi{}.pp-kpi-l{font-size:10px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:4px;}
+  .pp-kpi-v{font-size:28px;font-weight:700;letter-spacing:-.03em;}
+  .pp-kpi-s{font-size:11px;margin-top:2px;}
+  .pp-seg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+  .pp-seg{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;}
+  .pp-seg::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .pp-seg.ot::before{background:var(--seg0);}
+  .pp-seg.occ::before{background:var(--seg1);}
+  .pp-seg.rec::before{background:var(--seg2);}
+  .pp-seg.vip::before{background:var(--seg3);}
+  .pp-seg-label{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;}
+  .pp-seg-n{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px;}
+  .pp-seg-s{font-size:11px;color:var(--muted);margin-bottom:10px;}
+  .pp-mini-bar{height:4px;border-radius:2px;background:var(--bg3);overflow:hidden;margin-bottom:8px;}
+  .pp-mini-fill{height:100%;border-radius:2px;background:var(--orange);}
+  .pp-seg-insight{font-size:11px;color:var(--muted2);line-height:1.5;}
+  .pp-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .opp-badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:var(--orange-pale);color:var(--orange);border:1px solid rgba(245,130,58,.25);margin-bottom:8px;}
+
+  .sbrow{display:flex;gap:8px;margin-bottom:16px;}
+  .sbinp{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:border-color .15s;}
+  .sbinp:focus{border-color:var(--green);}.sbinp::placeholder{color:var(--muted);}
+  .sbbtn{background:var(--green);border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-family:var(--font);color:#fff;font-weight:600;cursor:pointer;}
+  .sbbtn:hover{background:var(--green-app);}
+  .ccard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:12px;}
+  .cchd{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+  .ccbadge{padding:4px 10px;border-radius:6px;font-size:11px;font-family:var(--mono);font-weight:500;flex-shrink:0;}
+  .ccid{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px;}
+  .ccname{font-size:16px;font-weight:600;letter-spacing:-.02em;}
+  .cckpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+  .ck{background:var(--bg);border-radius:8px;padding:10px 12px;}
+  .ckl{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:3px;}.ckv{font-size:16px;font-weight:600;}
+  .dtbl{width:100%;border-collapse:collapse;font-size:12px;}
+  .dtbl th{text-align:left;padding:6px 10px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;}
+  .dtbl td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted2);}
+  .dtbl tr:last-child td{border-bottom:none;}.dtbl tr:hover td{background:var(--bg);}
+  .chatmsgs{padding-bottom:12px;display:flex;flex-direction:column;gap:0;}
+  .cinrow{display:flex;gap:8px;padding:14px 0 0;border-top:1px solid var(--border);margin-top:12px;}
+  .cin{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:var(--font);font-size:13px;color:var(--text);outline:none;transition:border-color .15s;resize:none;height:40px;}
+  .cin:focus{border-color:var(--green);}.cin::placeholder{color:var(--muted);}
+  .csend{background:var(--green);border:none;border-radius:8px;padding:0 18px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;}
+  .csend:hover{background:var(--green-app);}.csend:disabled{opacity:.4;cursor:not-allowed;}
+  .msg{margin-bottom:12px;}
+  .msgu{display:flex;justify-content:flex-end;}
+  .msgu .bub{background:var(--green);color:#fff;border-radius:12px 12px 2px 12px;padding:10px 14px;max-width:65%;font-size:13px;line-height:1.6;}
+  .msgb{display:flex;gap:10px;align-items:flex-start;}
+  .bav{width:28px;height:28px;flex-shrink:0;background:var(--black);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green-app);font-family:var(--mono);margin-top:2px;}
+  .msgb .bub{background:var(--bg2);border:1px solid var(--border);border-radius:2px 12px 12px 12px;padding:12px 14px;flex:1;font-size:13px;color:var(--muted2);line-height:1.75;}
+  .msgb .bub strong{color:var(--text);font-weight:600;}
+  .td{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gray-mid);margin:0 2px;animation:blink 1.2s infinite;}
+  .td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+  /* API KEY SCREEN */
+  .apiscreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;}
+  .apibox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:36px 40px;text-align:center;width:420px;box-shadow:0 8px 40px rgba(0,0,0,0.1);}
+  .apibox-logo{font-size:17px;font-weight:700;color:var(--green-app);letter-spacing:-.02em;margin-bottom:4px;}
+  .apibox-title{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
+  .apibox-sub{font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:24px;}
+  .api-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:border-color .15s;margin-bottom:10px;letter-spacing:.04em;}
+  .api-inp:focus{border-color:var(--green);}
+  .api-inp::placeholder{color:var(--muted);letter-spacing:0;}
+  .api-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;margin-bottom:12px;}
+  .api-btn:hover{background:var(--green-app);}
+  .api-note{font-size:11px;color:var(--muted);line-height:1.5;}
+  .api-note a{color:var(--green);text-decoration:none;}
+  .api-err{font-size:12px;color:#E24B4A;margin-bottom:8px;display:none;font-family:var(--mono);}
+
+  .pov{position:fixed;inset:0;background:rgba(245,245,247,.88);display:none;align-items:center;justify-content:center;z-index:100;}
+  .pbox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:32px 40px;text-align:center;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.1);}
+  .spin{width:34px;height:34px;border:2.5px solid var(--gray-light);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .pt{font-size:15px;font-weight:600;margin-bottom:4px;}.ps{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:16px;}
+  .ptr{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+  .pf{height:100%;background:var(--green);border-radius:2px;transition:width .3s;width:0%;}
+  .nores{text-align:center;padding:40px;color:var(--muted);font-size:13px;}
+  .tag{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-family:var(--mono);background:var(--bg);color:var(--muted2);border:1px solid var(--border2);}
+  .tag.pp{background:var(--green-pale);color:var(--green);border-color:rgba(5,194,165,.3);}
+  .tag.npp{background:var(--orange-pale);color:var(--orange);border-color:rgba(245,130,58,.3);}
+  .ksm{background:var(--bg);border-radius:8px;padding:10px 12px;}.ksm+.ksm{margin-top:8px;}
+  .ksml{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:2px;}
+  .ksmv{font-size:16px;font-weight:600;}.ksms{font-size:10px;color:var(--muted);margin-top:1px;}
+  ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--gray-light);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="topbar">
+  <span class="tlogo">seQura</span>
+  <div class="tsep"></div>
+  <span class="ttitle">CRM Segment Bot</span>
+  <div class="tstatus"><div class="sdot" id="sDot"></div><span id="sTxt">Sin datos</span></div>
+</div>
+
+<div class="sidebar">
+  <div class="sbs">
+    <div class="sbl">Archivos</div>
+    <div class="uz" id="dzC" onclick="document.getElementById('fC').click()" ondragover="dov(event,'dzC')" ondragleave="dlv('dzC')" ondrop="drp(event,'c')">
+      <div class="ui">👤</div><div class="ul">Contactos</div>
+      <div class="us" id="lC">contactos_muestra2.csv</div><div class="uok" id="nC"></div>
+    </div>
+    <input type="file" id="fC" accept=".csv" onchange="lf(event,'c')">
+    <div class="uz" id="dzD" onclick="document.getElementById('fD').click()" ondragover="dov(event,'dzD')" ondragleave="dlv('dzD')" ondrop="drp(event,'d')">
+      <div class="ui">🛍️</div><div class="ul">Deals</div>
+      <div class="us" id="lD">deals_muestra2.csv</div><div class="uok" id="nD"></div>
+    </div>
+    <input type="file" id="fD" accept=".csv" onchange="lf(event,'d')">
+    <button class="gobtn" id="goBtn" disabled onclick="processData()">Analizar datos →</button>
+  </div>
+  <div class="sbs" id="ssS" style="display:none">
+    <div class="sbl">Resumen</div>
+    <div class="mstat"><div class="msl">Contactos</div><div class="msv" id="sbC">—</div></div>
+    <div class="mstat"><div class="msl">Deals cruzados</div><div class="msv" id="sbD">—</div></div>
+    <div class="mstat" style="border-left:3px solid var(--orange)">
+      <div class="msl">Sin Part Payment</div>
+      <div class="msv" id="sbNoPP" style="color:var(--orange)">—</div>
+    </div>
+  </div>
+  <div class="sbs" id="ssSeg" style="display:none">
+    <div class="sbl">Segmentos</div>
+    <div class="spill on" onclick="fSeg('all')" id="sp-all"><div class="sdotc" style="background:var(--gray-mid)"></div><span class="sname">Todos</span><span class="sn" id="sn-all">—</span></div>
+    <div class="spill" onclick="fSeg('ot')" id="sp-ot"><div class="sdotc" style="background:var(--seg0)"></div><span class="sname">One-timer</span><span class="sn" id="sn-ot">—</span></div>
+    <div class="spill" onclick="fSeg('occ')" id="sp-occ"><div class="sdotc" style="background:var(--seg1)"></div><span class="sname">Occasional</span><span class="sn" id="sn-occ">—</span></div>
+    <div class="spill" onclick="fSeg('rec')" id="sp-rec"><div class="sdotc" style="background:var(--seg2)"></div><span class="sname">Recurring</span><span class="sn" id="sn-rec">—</span></div>
+    <div class="spill" onclick="fSeg('vip')" id="sp-vip"><div class="sdotc" style="background:var(--seg3)"></div><span class="sname">VIP</span><span class="sn" id="sn-vip">—</span></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="empty" id="empt">
+    <div class="eico">🤖</div>
+    <div class="etit">CRM Segment Bot</div>
+    <div class="esub">Sube <strong>contactos_muestra2.csv</strong> y <strong>deals_muestra2.csv</strong> para clasificar shoppers, detectar oportunidades de <strong>Part Payment</strong> y generar campañas.</div>
+    <div class="steps">
+      <div class="step"><div class="stepn">01</div><div class="stept">Sube contactos_muestra2.csv</div></div>
+      <div class="step"><div class="stepn">02</div><div class="stept">Sube deals_muestra2.csv</div></div>
+      <div class="step"><div class="stepn">03</div><div class="stept">Analiza y activa Part Payment</div></div>
+    </div>
+  </div>
+
+  <div class="rw" id="resWrap" style="display:none">
+    <div class="vtabs">
+      <div class="vt on" onclick="showV('ov')">Vista general</div>
+      <div class="vt pp-tab" onclick="showV('pp')">⚡ Oportunidad Part Payment</div>
+      <div class="vt" onclick="showV('sr')">Buscar contacto</div>
+      <div class="vt" onclick="showV('ch')">Preguntar al bot</div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="vOv">
+      <div class="sgcards" id="segCards"></div>
+      <div id="ovCharts"></div>
+      <div class="aibox">
+        <div class="aihd"><span class="aitag">✦ AI Insights</span><span class="aist" id="aiSt">Analizando...</span></div>
+        <div class="aibody" id="aiBody"><span class="td"></span><span class="td"></span><span class="td"></span></div>
+      </div>
+    </div>
+
+    <!-- PART PAYMENT OPPORTUNITY -->
+    <div id="vPP" style="display:none">
+      <div class="pp-hero" id="ppHero"></div>
+      <div class="pp-seg-grid" id="ppSegGrid"></div>
+      <div class="two">
+        <div class="card"><div class="ct">Top sectores sin Part Payment</div><div id="ppSectors"></div></div>
+        <div class="card"><div class="ct">Solución actual de los sin Part Payment</div><div id="ppCurrentSol"></div></div>
+      </div>
+      <div class="aibox orange">
+        <div class="aihd"><span class="aitag orange">⚡ Estrategia Part Payment</span><span class="aist" id="ppAiSt">Generando estrategia...</span></div>
+        <div class="aibody" id="ppAiBody"><span class="td"></span><span class="td"></span><span class="td"></span></div>
+      </div>
+    </div>
+
+    <!-- SEARCH -->
+    <div id="vSr" style="display:none">
+      <div class="sbrow">
+        <input class="sbinp" type="text" id="srInp" placeholder="Buscar por seQura ID..." onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="sbbtn" onclick="doSearch()">Buscar</button>
+      </div>
+      <div id="srRes"></div>
+    </div>
+
+    <!-- CHAT -->
+    <div id="vCh" style="display:none">
+      <div class="chatmsgs" id="chatMsgs"></div>
+      <div class="cinrow">
+        <textarea class="cin" id="cinp" placeholder="Ej: ¿Qué email mando a One-timers que compraron en fashion sin Part Payment?" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+        <button class="csend" id="csend" onclick="sendMsg()">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- API KEY SCREEN -->
+<div class="apiscreen" id="apiScreen">
+  <div class="apibox">
+    <div class="apibox-logo">seQura</div>
+    <div class="apibox-title">CRM Segment Bot</div>
+    <div class="apibox-sub">Introduce tu API key de Anthropic para activar los insights y el chat con IA. Los datos que subas no salen de tu navegador.</div>
+    <div class="api-err" id="apiErr">API key inválida. Empieza por "sk-ant-"</div>
+    <input class="api-inp" type="password" id="apiInp" placeholder="sk-ant-api03-..." onkeydown="if(event.key==='Enter')saveKey()">
+    <button class="api-btn" onclick="saveKey()">Entrar →</button>
+    <div class="api-note">
+      Obtén tu key en <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+      La key se guarda solo en tu sesión de navegador y nunca se envía a terceros.
+    </div>
+  </div>
+</div>
+
+<div class="pov" id="pOv">
+  <div class="pbox">
+    <div class="spin"></div>
+    <div class="pt">Procesando datos</div>
+    <div class="ps" id="pS">Iniciando...</div>
+    <div class="ptr"><div class="pf" id="pF"></div></div>
+  </div>
+</div>
+
+<script>
+const S={cRaw:null,dRaw:null,contacts:[],deals:[],cMap:{},
+  segs:{ot:[],occ:[],rec:[],vip:[]},
+  noPP:{ot:[],occ:[],rec:[],vip:[]},
+  withPP:{ot:[],occ:[],rec:[],vip:[]},
+  actSeg:'all',chatH:[],apiKey:''};
+
+// API KEY
+function saveKey(){
+  const k=document.getElementById('apiInp').value.trim();
+  if(!k.startsWith('sk-ant-')){
+    document.getElementById('apiErr').style.display='block';return;
+  }
+  S.apiKey=k;
+  document.getElementById('apiScreen').style.display='none';
+}
+
+// Llamada a la API usando la key del usuario
+async function callClaude(messages, system, maxTokens=1000){
+  const body={model:'claude-sonnet-4-20250514',max_tokens:maxTokens,messages};
+  if(system)body.system=system;
+  const r=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify(body)
+  });
+  const d=await r.json();
+  if(d.error)throw new Error(d.error.message);
+  return d.content?.[0]?.text||'';
+}
+
+const CC={id:'Sequra ID unique',rfm:'RFM segment',nd:'Number of Associated Deals',
+  app:'Download app',fl:'First login app',ll:'Last login app',rd:'Recent Deal Close Date',
+  birth:'Birth Date',rewards:'rewards_mode',cd:'Create Date'};
+const DC={cid:'Sequra Shopper ID unique',name:'Deal Name',merch:'Merchant Name',
+  sector:'Merchant Sector',sub:'Merchant Subsector',sol:'Nombre solución de pago',
+  stage:'Deal Stage',close:'Fecha de cierre Sequra',amt:'Amount',
+  chan:'Merchant Channel',inst:'Installments Count'};
+
+function gv(row,col){return row[col]||'';}
+function normId(v){try{return String(Math.round(parseFloat(v)));}catch{return String(v).trim();}}
+function cls(n){n=parseInt(parseFloat(n||0));if(n===1)return'ot';if(n<=5)return'occ';if(n<=15)return'rec';return'vip';}
+function slp(ms){return new Promise(r=>setTimeout(r,ms));}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function dov(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
+function dlv(id){document.getElementById(id).classList.remove('drag');}
+function drp(e,t){e.preventDefault();dlv(t==='c'?'dzC':'dzD');if(e.dataTransfer.files[0])lfd(e.dataTransfer.files[0],t);}
+function lf(e,t){if(e.target.files[0])lfd(e.target.files[0],t);}
+function lfd(file,t){
+  Papa.parse(file,{header:true,skipEmptyLines:true,complete:res=>{
+    if(t==='c'){S.cRaw=res.data;document.getElementById('dzC').classList.add('loaded');document.getElementById('lC').style.display='none';const el=document.getElementById('nC');el.style.display='block';el.textContent=`✓ ${file.name} · ${res.data.length.toLocaleString()} filas`;}
+    else{S.dRaw=res.data;document.getElementById('dzD').classList.add('loaded');document.getElementById('lD').style.display='none';const el=document.getElementById('nD');el.style.display='block';el.textContent=`✓ ${file.name} · ${res.data.length.toLocaleString()} filas`;}
+    if(S.cRaw&&S.dRaw)document.getElementById('goBtn').disabled=false;
+  }});
+}
+
+async function processData(){
+  document.getElementById('pOv').style.display='flex';await slp(50);
+  sp(10,'Parseando contactos...');await slp(80);
+  S.contacts=S.cRaw.map((row,i)=>{
+    const nd=parseInt(parseFloat(gv(row,CC.nd)))||0;
+    return{_i:i,id:normId(gv(row,CC.id)),rfm:gv(row,CC.rfm),nd,seg:cls(nd),
+      app:gv(row,CC.app),fl:gv(row,CC.fl),ll:gv(row,CC.ll),rd:gv(row,CC.rd),
+      birth:gv(row,CC.birth),rewards:gv(row,CC.rewards),cd:gv(row,CC.cd),deals:[],_r:row};
+  });
+  sp(35,'Parseando deals...');await slp(80);
+  S.deals=S.dRaw.map((row,i)=>({_i:i,cid:normId(gv(row,DC.cid)),name:gv(row,DC.name),
+    merch:gv(row,DC.merch),sector:gv(row,DC.sector),sub:gv(row,DC.sub),
+    sol:gv(row,DC.sol),stage:gv(row,DC.stage),close:gv(row,DC.close),
+    amt:parseFloat(gv(row,DC.amt))||0,chan:gv(row,DC.chan),inst:gv(row,DC.inst),_r:row}));
+  sp(55,'Cruzando datos...');await slp(80);
+  S.cMap={};S.contacts.forEach(c=>{S.cMap[c.id]=c;});
+  let matched=0;
+  S.deals.forEach(d=>{if(S.cMap[d.cid]){S.cMap[d.cid].deals.push(d);matched++;}});
+  sp(70,'Clasificando segmentos y Part Payment...');await slp(60);
+
+  // Segment + PP classification
+  S.segs={ot:[],occ:[],rec:[],vip:[]};
+  S.noPP={ot:[],occ:[],rec:[],vip:[]};
+  S.withPP={ot:[],occ:[],rec:[],vip:[]};
+  S.contacts.forEach(c=>{
+    if(S.segs[c.seg])S.segs[c.seg].push(c);
+    const hasPP=c.deals.some(d=>d.sol==='Part Payment');
+    c.hasPP=hasPP;
+    if(hasPP){if(S.withPP[c.seg])S.withPP[c.seg].push(c);}
+    else{if(S.noPP[c.seg])S.noPP[c.seg].push(c);}
+  });
+
+  sp(90,'Generando vista...');await slp(60);
+  const tot=S.contacts.length;
+  const totalNoPP=Object.values(S.noPP).flat().length;
+  document.getElementById('sbC').textContent=tot.toLocaleString();
+  document.getElementById('sbD').textContent=matched.toLocaleString();
+  document.getElementById('sbNoPP').textContent=totalNoPP.toLocaleString();
+  document.getElementById('sn-all').textContent=tot.toLocaleString();
+  ['ot','occ','rec','vip'].forEach(s=>document.getElementById(`sn-${s}`).textContent=(S.segs[s]?.length||0).toLocaleString());
+  document.getElementById('ssS').style.display='block';
+  document.getElementById('ssSeg').style.display='block';
+
+  sp(100,'Listo');await slp(350);
+  document.getElementById('pOv').style.display='none';
+  document.getElementById('empt').style.display='none';
+  document.getElementById('resWrap').style.display='block';
+  document.getElementById('sDot').classList.add('on');
+  document.getElementById('sTxt').textContent=`${tot.toLocaleString()} contactos`;
+  renderOv();renderPP();aiInsights();ppAiInsights();
+}
+function sp(p,t){document.getElementById('pF').style.width=p+'%';document.getElementById('pS').textContent=t;}
+
+function renderOv(){
+  const tot=S.contacts.length;
+  const defs=[{k:'ot',l:'One-timer',s:'1 compra',c:'var(--seg0)'},{k:'occ',l:'Occasional',s:'2–5 compras',c:'var(--seg1)'},{k:'rec',l:'Recurring',s:'6–15 compras',c:'var(--seg2)'},{k:'vip',l:'VIP',s:'>15 compras',c:'var(--seg3)'}];
+  document.getElementById('segCards').innerHTML=defs.map(d=>{
+    const n=S.segs[d.k]?.length||0,pct=tot>0?((n/tot)*100).toFixed(1):0;
+    return`<div class="sc"><div class="scl">${d.l} · ${d.s}</div><div class="scv" style="color:${d.c}">${pct}%</div><div class="scs">${n.toLocaleString()} contactos</div><div class="scbar" style="background:${d.c};width:${Math.max(pct,2)}%"></div></div>`;
+  }).join('');
+  const act=S.actSeg==='all'?S.contacts:(S.segs[S.actSeg]||[]);
+  const sm={},mm={},solm={},rfmm={};
+  act.forEach(c=>{if(c.rfm)rfmm[c.rfm]=(rfmm[c.rfm]||0)+1;(c.deals||[]).forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.merch)mm[d.merch]=(mm[d.merch]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});});
+  const ts=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const tm=Object.entries(mm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const tsol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const trfm=Object.entries(rfmm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const avgD=act.length>0?(act.reduce((a,c)=>a+c.nd,0)/act.length).toFixed(1):0;
+  const wApp=act.filter(c=>c.app&&c.app.toLowerCase()==='sí').length;
+  const appP=act.length>0?((wApp/act.length)*100).toFixed(0):0;
+  function bars(arr,color){if(!arr.length)return`<div style="color:var(--muted);font-size:12px">Sin datos</div>`;const mx=arr[0][1];return arr.map(([l,n])=>`<div class="hbr"><span class="hbl">${esc(l)}</span><div class="hbt"><div class="hbf" style="width:${(n/mx)*100}%;background:${color}"></div></div><span class="hbv">${n.toLocaleString()}</span></div>`).join('');}
+  document.getElementById('ovCharts').innerHTML=`
+  <div class="two"><div class="card"><div class="ct">Top sectores</div>${bars(ts,'var(--green)')}</div><div class="card"><div class="ct">Top merchants</div>${bars(tm,'var(--green-app)')}</div></div>
+  <div class="three"><div class="card"><div class="ct">KPIs</div>
+    <div class="ksm"><div class="ksml">Avg compras/contacto</div><div class="ksmv">${avgD}</div></div>
+    <div class="ksm"><div class="ksml">App descargada</div><div class="ksmv">${appP}%</div><div class="ksms">${wApp.toLocaleString()} contactos</div></div>
+  </div>
+  <div class="card"><div class="ct">Solución de pago</div>${bars(tsol,'var(--blue-teal)')}</div>
+  <div class="card"><div class="ct">RFM Segment</div>${bars(trfm,'var(--purple)')}</div></div>`;
+}
+
+function renderPP(){
+  const tot=S.contacts.length;
+  const totalNoPP=Object.values(S.noPP).flat().length;
+  const totalWithPP=Object.values(S.withPP).flat().length;
+  const ppPct=tot>0?((totalWithPP/tot)*100).toFixed(1):0;
+  const noPpPct=tot>0?((totalNoPP/tot)*100).toFixed(1):0;
+
+  // Hero KPIs
+  const ppDeals=S.deals.filter(d=>d.sol==='Part Payment');
+  const avgPPamt=ppDeals.length>0?(ppDeals.reduce((a,d)=>a+d.amt,0)/ppDeals.length).toFixed(0):0;
+  const nonPPDeals=S.deals.filter(d=>d.sol!=='Part Payment'&&d.sol);
+  const avgNonPPamt=nonPPDeals.length>0?(nonPPDeals.reduce((a,d)=>a+d.amt,0)/nonPPDeals.length).toFixed(0):0;
+
+  document.getElementById('ppHero').innerHTML=`
+    <div class="pp-kpi"><div class="pp-kpi-l">Sin Part Payment</div><div class="pp-kpi-v" style="color:var(--orange)">${noPpPct}%</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${totalNoPP.toLocaleString()} contactos</div></div>
+    <div class="pp-kpi"><div class="pp-kpi-l">Con Part Payment</div><div class="pp-kpi-v" style="color:var(--green-app)">${ppPct}%</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${totalWithPP.toLocaleString()} contactos</div></div>
+    <div class="pp-kpi"><div class="pp-kpi-l">Ticket medio PP</div><div class="pp-kpi-v" style="color:#fff">€${avgPPamt}</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${ppDeals.length.toLocaleString()} deals</div></div>
+    <div class="pp-kpi"><div class="pp-kpi-l">Ticket medio no-PP</div><div class="pp-kpi-v" style="color:rgba(255,255,255,0.6)">€${avgNonPPamt}</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${nonPPDeals.length.toLocaleString()} deals</div></div>`;
+
+  // Seg grid
+  const segDefs=[{k:'ot',l:'One-timer',c:'var(--seg0)'},{k:'occ',l:'Occasional',c:'var(--seg1)'},{k:'rec',l:'Recurring',c:'var(--seg2)'},{k:'vip',l:'VIP',c:'var(--seg3)'}];
+  const segInsights={ot:'Mayor volumen de oportunidad. Primera compra fue sin PP — son los más fáciles de convertir.',occ:'Ya tienen historial. Un email mostrando el beneficio del aplazamiento puede activarlos.',rec:'Clientes fieles sin PP — alto valor potencial recurrente si se convierten.',vip:'Pocos, pero de alto valor. Merecen outreach personalizado.'};
+  document.getElementById('ppSegGrid').innerHTML=segDefs.map(d=>{
+    const noPP=S.noPP[d.k]?.length||0;
+    const total=S.segs[d.k]?.length||0;
+    const pct=total>0?((noPP/total)*100).toFixed(0):0;
+    return`<div class="pp-seg ${d.k}">
+      <div class="pp-seg-label">${d.l}</div>
+      <div class="pp-seg-n" style="color:var(--orange)">${noPP.toLocaleString()}</div>
+      <div class="pp-seg-s">${pct}% del segmento sin PP</div>
+      <div class="pp-mini-bar"><div class="pp-mini-fill" style="width:${pct}%"></div></div>
+      <div class="pp-seg-insight">${segInsights[d.k]}</div>
+    </div>`;
+  }).join('');
+
+  // Sectores sin PP
+  const noPPids=new Set(Object.values(S.noPP).flat().map(c=>c.id));
+  const noPPdeals=S.deals.filter(d=>noPPids.has(d.cid));
+  const sm={},solm={};
+  noPPdeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const ts=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const tsol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const maxS=ts[0]?.[1]||1,maxSol=tsol[0]?.[1]||1;
+
+  document.getElementById('ppSectors').innerHTML=ts.map(([l,n])=>`<div class="hbr"><span class="hbl">${esc(l)}</span><div class="hbt"><div class="hbf" style="width:${(n/maxS)*100}%;background:var(--orange)"></div></div><span class="hbv">${n.toLocaleString()}</span></div>`).join('');
+  document.getElementById('ppCurrentSol').innerHTML=tsol.map(([l,n])=>`<div class="hbr"><span class="hbl">${esc(l)}</span><div class="hbt"><div class="hbf" style="width:${(n/maxSol)*100}%;background:var(--blue-teal)"></div></div><span class="hbv">${n.toLocaleString()}</span></div>`).join('');
+}
+
+async function ppAiInsights(){
+  const tot=S.contacts.length;
+  const totalNoPP=Object.values(S.noPP).flat().length;
+  const noPPids=new Set(Object.values(S.noPP).flat().map(c=>c.id));
+  const noPPdeals=S.deals.filter(d=>noPPids.has(d.cid));
+  const sm={},solm={};
+  noPPdeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const topS=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,n])=>`${s}(${n})`).join(', ');
+  const topSol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
+
+  const prompt=`Eres estratega de CRM y email marketing para seQura (BNPL, España). 
+Part Payment es el producto clave: genera fees al merchant y/o shopper, por lo que cada conversión es ingreso directo para seQura.
+
+Datos reales:
+- Base total: ${tot.toLocaleString()} contactos
+- SIN Part Payment: ${totalNoPP.toLocaleString()} (${((totalNoPP/tot)*100).toFixed(1)}%)
+  - One-timer sin PP: ${S.noPP.ot.length.toLocaleString()}
+  - Occasional sin PP: ${S.noPP.occ.length.toLocaleString()}
+  - Recurring sin PP: ${S.noPP.rec.length.toLocaleString()}
+  - VIP sin PP: ${S.noPP.vip.length.toLocaleString()}
+- Solución actual de los sin PP: ${topSol}
+- Sectores principales sin PP: ${topS}
+
+Genera un plan de acción concreto con:
+1. Las 3 audiencias prioritarias a activar hacia Part Payment (con criterios de segmentación exactos)
+2. El mensaje/ángulo clave para cada audiencia (por qué Part Payment les conviene a ellos)
+3. Secuencia de envíos recomendada (cuántos emails, cuándo, qué CTA)
+
+Sé muy específico y accionable. HTML simple con <strong>, <br><br> y •. Sin markdown.`;
+
+  document.getElementById('ppAiSt').textContent='Generando con Claude...';
+  try{
+    const txt=await callClaude([{role:'user',content:prompt}],null,1200);
+    document.getElementById('ppAiSt').textContent='Generado por Claude';
+    document.getElementById('ppAiBody').innerHTML=txt||ppFallback();
+  }catch{document.getElementById('ppAiSt').textContent='Análisis local';document.getElementById('ppAiBody').innerHTML=ppFallback();}
+}
+
+function ppFallback(){
+  const noPP=Object.values(S.noPP).flat().length;
+  return`<strong>Audiencias prioritarias:</strong><br><br>
+• <strong>One-timers con Invoice en fashion/home (${S.noPP.ot.length.toLocaleString()} contactos):</strong> Son tu mayor bolsa. Compraron una vez y pagaron de golpe — nunca han experimentado el aplazamiento. Email con ángulo "compra más, paga poco a poco".<br><br>
+• <strong>Occasional con Invoice activos (${S.noPP.occ.length.toLocaleString()} contactos):</strong> Ya repiten pero no usan PP. El argumento es el ahorro de liquidez: "ya que compras regularmente, no inmovilices tu dinero".<br><br>
+• <strong>Recurring sin PP (${S.noPP.rec.length.toLocaleString()} contactos):</strong> Alta frecuencia, nunca han probado PP. Son los de mayor LTV potencial — un descuento en la primera cuota puede ser el detonante.<br><br>
+<strong>Secuencia recomendada:</strong><br><br>
+• Email 1 — Awareness: "¿Sabías que puedes fraccionar tus compras en seQura?" + CTA a merchant partner top.<br>
+• Email 2 (7 días después) — Beneficio concreto: calculadora de cuotas personalizada con su ticket medio.<br>
+• Email 3 (14 días después) — Urgencia: oferta limitada en merchant de su sector habitual con Part Payment activado.`;
+}
+
+async function aiInsights(){
+  const tot=S.contacts.length;
+  const sm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;});
+  const solm={};S.deals.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const tS=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
+  const tSol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
+  const wA=S.contacts.filter(c=>c.app&&c.app.toLowerCase()==='sí').length;
+  const totalNoPP=Object.values(S.noPP).flat().length;
+  const prompt=`Eres analista senior CRM para seQura (BNPL, España). Part Payment es el producto clave de ingresos.
+Datos: Total ${tot.toLocaleString()} contactos. One-timer:${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), Occasional:${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), Recurring:${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP:${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). App:${((wA/tot)*100).toFixed(1)}%. Sin Part Payment:${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%). Sectores:${tS}. Soluciones:${tSol}.
+Genera 3 insights clave + 3 recomendaciones de campaña en español. HTML simple con <strong> y •.`;
+  document.getElementById('aiSt').textContent='Generando...';
+  try{
+    const txt=await callClaude([{role:'user',content:prompt}],null,800);
+    document.getElementById('aiSt').textContent='Generado por Claude';
+    document.getElementById('aiBody').innerHTML=txt||'Sin conexión.';
+  }catch{document.getElementById('aiSt').textContent='Sin conexión';document.getElementById('aiBody').innerHTML='Activa la conexión a la API para generar insights.';}
+}
+
+function fSeg(s){S.actSeg=s;document.querySelectorAll('.spill').forEach(p=>p.classList.remove('on'));document.getElementById(`sp-${s}`).classList.add('on');renderOv();}
+
+function doSearch(){
+  const q=document.getElementById('srInp').value.trim().toLowerCase();
+  if(!q)return;
+  const res=S.contacts.filter(c=>c.id.toLowerCase().includes(q)).slice(0,20);
+  if(!res.length){document.getElementById('srRes').innerHTML=`<div class="nores">Sin resultados para "${esc(q)}"</div>`;return;}
+  const sc={'ot':'var(--seg0)','occ':'var(--seg1)','rec':'var(--seg2)','vip':'var(--seg3)'};
+  const sl={'ot':'One-timer','occ':'Occasional','rec':'Recurring','vip':'VIP'};
+  const sbg={'ot':'rgba(141,141,141,.1)','occ':'rgba(5,194,165,.1)','rec':'rgba(11,174,200,.1)','vip':'rgba(123,111,232,.1)'};
+  document.getElementById('srRes').innerHTML=res.map(c=>{
+    const deals=c.deals||[];const totA=deals.reduce((a,d)=>a+d.amt,0);
+    const ppTag=c.hasPP?`<span class="tag pp">✓ Part Payment</span>`:`<span class="tag npp">Sin Part Payment</span>`;
+    return`<div class="ccard">
+      <div class="cchd">
+        <div style="flex:1"><div class="ccname">ID ${esc(c.id)} ${ppTag}</div><div class="ccid">RFM: ${esc(c.rfm)||'—'} · ${esc(c.cd||'').split(' ')[0]}</div></div>
+        <div class="ccbadge" style="background:${sbg[c.seg]};color:${sc[c.seg]};border:1px solid ${sc[c.seg]}33">${sl[c.seg]}</div>
+      </div>
+      <div class="cckpis">
+        <div class="ck"><div class="ckl">Compras</div><div class="ckv" style="color:${sc[c.seg]}">${c.nd}</div></div>
+        <div class="ck"><div class="ckl">Deals cruzados</div><div class="ckv">${deals.length}</div></div>
+        <div class="ck"><div class="ckl">Importe total</div><div class="ckv">€${totA.toLocaleString('es',{maximumFractionDigits:0})}</div></div>
+        <div class="ck"><div class="ckl">App</div><div class="ckv" style="font-size:12px">${c.app||'—'}</div></div>
+        <div class="ck"><div class="ckl">Último deal</div><div class="ckv" style="font-size:11px">${(c.rd||'—').split(' ')[0]}</div></div>
+      </div>
+      ${deals.length?`<div class="ct" style="margin-bottom:8px">Deals (${deals.length})</div>
+        <div style="overflow-x:auto"><table class="dtbl">
+          <tr><th>Merchant</th><th>Sector</th><th>Solución</th><th>Importe</th><th>Cierre</th></tr>
+          ${deals.slice(0,8).map(d=>`<tr><td>${esc(d.merch)||'—'}</td><td>${esc(d.sector)||'—'}</td><td><span class="tag ${d.sol==='Part Payment'?'pp':''}">${esc(d.sol)||'—'}</span></td><td>€${d.amt.toFixed(0)}</td><td>${(esc(d.close)||'—').split(' ')[0]}</td></tr>`).join('')}
+          ${deals.length>8?`<tr><td colspan="5" style="color:var(--muted);font-size:11px;font-family:var(--mono)">+${deals.length-8} más</td></tr>`:''}
+        </table></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function buildCtx(){
+  const tot=S.contacts.length;
+  const totalNoPP=Object.values(S.noPP).flat().length;
+  const sm={},solm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  return`Base seQura (${tot.toLocaleString()} contactos). Segmentos: One-timer ${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), Occasional ${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), Recurring ${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP ${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). SIN Part Payment: ${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%) — One-timer:${S.noPP.ot.length}, Occasional:${S.noPP.occ.length}, Recurring:${S.noPP.rec.length}, VIP:${S.noPP.vip.length}. Deals:${S.deals.length.toLocaleString()}. Top sectores:${Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}:${n}`).join(',')}. Soluciones:${Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}:${n}`).join(',')}. Part Payment es el producto clave de ingresos de seQura.`;
+}
+
+async function sendMsg(){
+  const inp=document.getElementById('cinp'),msg=inp.value.trim();
+  if(!msg)return;inp.value='';document.getElementById('csend').disabled=true;
+  addMsg('u',msg);S.chatH.push({role:'user',content:msg});const tid=addTyping();
+  try{
+    const rep=await callClaude(S.chatH,`Eres analista experto CRM y email marketing para seQura (BNPL, España). Responde en español, conciso y accionable. ${buildCtx()}`);
+    rmT(tid);addMsg('b',rep);S.chatH.push({role:'assistant',content:rep});
+  }catch{rmT(tid);addMsg('b','Error de conexión. Verifica tu API key.');}
+  document.getElementById('csend').disabled=false;
+}
+
+let tc=0;
+function addTyping(){const id='t'+(++tc),d=document.createElement('div');d.className='msg msgb';d.id=id;d.innerHTML=`<div class="bav">SQ</div><div class="bub"><span class="td"></span><span class="td"></span><span class="td"></span></div>`;document.getElementById('chatMsgs').appendChild(d);d.scrollIntoView({behavior:'smooth'});return id;}
+function rmT(id){document.getElementById(id)?.remove();}
+function addMsg(t,txt){
+  const d=document.createElement('div');d.className=`msg msg${t==='u'?'u':'b'}`;
+  if(t==='u')d.innerHTML=`<div class="bub">${esc(txt)}</div>`;
+  else{const f=txt.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');d.innerHTML=`<div class="bav">SQ</div><div class="bub">${f}</div>`;}
+  document.getElementById('chatMsgs').appendChild(d);d.scrollIntoView({behavior:'smooth'});
+}
+
+function showV(v){
+  const map={ov:'vOv',pp:'vPP',sr:'vSr',ch:'vCh'};
+  Object.entries(map).forEach(([k,id])=>{document.getElementById(id).style.display=k===v?(k==='ch'?'flex':'block'):'none';});
+  document.querySelectorAll('.vt').forEach((t,i)=>{t.classList.toggle('on',['ov','pp','sr','ch'][i]===v);});
+  if(v==='ch'&&!document.getElementById('chatMsgs').children.length)addMsg('b','¡Hola! Tengo los datos cargados con info de Part Payment. ¿Qué quieres analizar o generar?');
+}
+</script>
+</body>
+</html>
