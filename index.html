@@ -10,8 +10,7 @@
   :root {
     --green:#05C2A5;--green-app:#21CFAC;--green-light:#CBFFFE;--green-pale:#E6FAF8;
     --white:#F5F5F7;--gray-light:#DEDEDE;--gray-mid:#8D8D8D;--black:#1C1C1C;
-    --purple:#7B6FE8;--purple-pale:#EDEAFF;--blue-teal:#0BAEC8;
-    --orange:#F5823A;--orange-pale:#FEF0E8;
+    --purple:#7B6FE8;--blue-teal:#0BAEC8;--orange:#F5823A;--orange-pale:#FEF0E8;
     --bg:#F5F5F7;--bg2:#FFFFFF;--bg3:#EAEAEA;
     --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.13);
     --text:#1C1C1C;--muted:#8D8D8D;--muted2:#5A5A5A;
@@ -59,7 +58,7 @@
   .vtabs{display:flex;gap:2px;margin-bottom:20px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:4px;width:fit-content;flex-wrap:wrap;}
   .vt{padding:6px 16px;font-size:13px;cursor:pointer;color:var(--muted);border-radius:7px;font-weight:500;transition:background .15s,color .15s;}
   .vt:hover{color:var(--text);}.vt.on{background:var(--green);color:#fff;}
-  .vt.pp-tab.on{background:var(--orange);color:#fff;}
+  .vt.pp-tab.on{background:var(--orange);}
   .sgcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
   .sc{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
   .scl{font-size:10px;color:var(--muted);margin-bottom:4px;font-family:var(--mono);}
@@ -68,7 +67,6 @@
   .scbar{height:3px;border-radius:2px;margin-top:12px;opacity:.35;}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
   .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
-  .four{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
   .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
   .ct{font-size:10px;font-family:var(--mono);letter-spacing:.07em;color:var(--muted);text-transform:uppercase;margin-bottom:12px;}
   .hbr{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
@@ -82,28 +80,21 @@
   .aitag.orange{color:var(--orange);}
   .aist{font-size:11px;color:var(--muted);font-family:var(--mono);}
   .aibody{font-size:13px;color:var(--muted2);line-height:1.75;}.aibody strong{color:var(--text);font-weight:600;}
-
-  /* PP OPPORTUNITY */
   .pp-hero{background:var(--black);border-radius:var(--r);padding:24px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;}
-  .pp-kpi{}.pp-kpi-l{font-size:10px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:4px;}
+  .pp-kpi-l{font-size:10px;color:rgba(255,255,255,0.4);font-family:var(--mono);margin-bottom:4px;}
   .pp-kpi-v{font-size:28px;font-weight:700;letter-spacing:-.03em;}
   .pp-kpi-s{font-size:11px;margin-top:2px;}
   .pp-seg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
   .pp-seg{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden;}
   .pp-seg::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-  .pp-seg.ot::before{background:var(--seg0);}
-  .pp-seg.occ::before{background:var(--seg1);}
-  .pp-seg.rec::before{background:var(--seg2);}
-  .pp-seg.vip::before{background:var(--seg3);}
+  .pp-seg.ot::before{background:var(--seg0);}.pp-seg.occ::before{background:var(--seg1);}
+  .pp-seg.rec::before{background:var(--seg2);}.pp-seg.vip::before{background:var(--seg3);}
   .pp-seg-label{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;}
   .pp-seg-n{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-bottom:2px;}
   .pp-seg-s{font-size:11px;color:var(--muted);margin-bottom:10px;}
   .pp-mini-bar{height:4px;border-radius:2px;background:var(--bg3);overflow:hidden;margin-bottom:8px;}
   .pp-mini-fill{height:100%;border-radius:2px;background:var(--orange);}
   .pp-seg-insight{font-size:11px;color:var(--muted2);line-height:1.5;}
-  .pp-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-  .opp-badge{display:inline-block;padding:3px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);background:var(--orange-pale);color:var(--orange);border:1px solid rgba(245,130,58,.25);margin-bottom:8px;}
-
   .sbrow{display:flex;gap:8px;margin-bottom:16px;}
   .sbinp{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:border-color .15s;}
   .sbinp:focus{border-color:var(--green);}.sbinp::placeholder{color:var(--muted);}
@@ -137,21 +128,6 @@
   .td{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--gray-mid);margin:0 2px;animation:blink 1.2s infinite;}
   .td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
   @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-  /* API KEY SCREEN */
-  .apiscreen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;}
-  .apibox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:36px 40px;text-align:center;width:420px;box-shadow:0 8px 40px rgba(0,0,0,0.1);}
-  .apibox-logo{font-size:17px;font-weight:700;color:var(--green-app);letter-spacing:-.02em;margin-bottom:4px;}
-  .apibox-title{font-size:20px;font-weight:700;letter-spacing:-.03em;margin-bottom:8px;}
-  .apibox-sub{font-size:13px;color:var(--muted2);line-height:1.6;margin-bottom:24px;}
-  .api-inp{width:100%;background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:13px;color:var(--text);outline:none;transition:border-color .15s;margin-bottom:10px;letter-spacing:.04em;}
-  .api-inp:focus{border-color:var(--green);}
-  .api-inp::placeholder{color:var(--muted);letter-spacing:0;}
-  .api-btn{width:100%;padding:11px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;transition:background .15s;margin-bottom:12px;}
-  .api-btn:hover{background:var(--green-app);}
-  .api-note{font-size:11px;color:var(--muted);line-height:1.5;}
-  .api-note a{color:var(--green);text-decoration:none;}
-  .api-err{font-size:12px;color:#E24B4A;margin-bottom:8px;display:none;font-family:var(--mono);}
-
   .pov{position:fixed;inset:0;background:rgba(245,245,247,.88);display:none;align-items:center;justify-content:center;z-index:100;}
   .pbox{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:32px 40px;text-align:center;min-width:300px;box-shadow:0 8px 32px rgba(0,0,0,.1);}
   .spin{width:34px;height:34px;border:2.5px solid var(--gray-light);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px;}
@@ -218,8 +194,8 @@
     <div class="etit">CRM Segment Bot</div>
     <div class="esub">Sube <strong>contactos_muestra2.csv</strong> y <strong>deals_muestra2.csv</strong> para clasificar shoppers, detectar oportunidades de <strong>Part Payment</strong> y generar campañas.</div>
     <div class="steps">
-      <div class="step"><div class="stepn">01</div><div class="stept">Sube contactos_muestra2.csv</div></div>
-      <div class="step"><div class="stepn">02</div><div class="stept">Sube deals_muestra2.csv</div></div>
+      <div class="step"><div class="stepn">01</div><div class="stept">Sube contactos CSV</div></div>
+      <div class="step"><div class="stepn">02</div><div class="stept">Sube deals CSV</div></div>
       <div class="step"><div class="stepn">03</div><div class="stept">Analiza y activa Part Payment</div></div>
     </div>
   </div>
@@ -227,12 +203,11 @@
   <div class="rw" id="resWrap" style="display:none">
     <div class="vtabs">
       <div class="vt on" onclick="showV('ov')">Vista general</div>
-      <div class="vt pp-tab" onclick="showV('pp')">⚡ Oportunidad Part Payment</div>
+      <div class="vt pp-tab" onclick="showV('pp')">⚡ Part Payment</div>
       <div class="vt" onclick="showV('sr')">Buscar contacto</div>
       <div class="vt" onclick="showV('ch')">Preguntar al bot</div>
     </div>
 
-    <!-- OVERVIEW -->
     <div id="vOv">
       <div class="sgcards" id="segCards"></div>
       <div id="ovCharts"></div>
@@ -242,7 +217,6 @@
       </div>
     </div>
 
-    <!-- PART PAYMENT OPPORTUNITY -->
     <div id="vPP" style="display:none">
       <div class="pp-hero" id="ppHero"></div>
       <div class="pp-seg-grid" id="ppSegGrid"></div>
@@ -256,7 +230,6 @@
       </div>
     </div>
 
-    <!-- SEARCH -->
     <div id="vSr" style="display:none">
       <div class="sbrow">
         <input class="sbinp" type="text" id="srInp" placeholder="Buscar por seQura ID..." onkeydown="if(event.key==='Enter')doSearch()">
@@ -265,7 +238,6 @@
       <div id="srRes"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="vCh" style="display:none">
       <div class="chatmsgs" id="chatMsgs"></div>
       <div class="cinrow">
@@ -275,22 +247,6 @@
     </div>
   </div>
 </div>
-</div>
-
-<!-- API KEY SCREEN -->
-<div class="apiscreen" id="apiScreen">
-  <div class="apibox">
-    <div class="apibox-logo">seQura</div>
-    <div class="apibox-title">CRM Segment Bot</div>
-    <div class="apibox-sub">Introduce tu API key de Anthropic para activar los insights y el chat con IA. Los datos que subas no salen de tu navegador.</div>
-    <div class="api-err" id="apiErr">API key inválida. Empieza por "sk-ant-"</div>
-    <input class="api-inp" type="password" id="apiInp" placeholder="sk-ant-api03-..." onkeydown="if(event.key==='Enter')saveKey()">
-    <button class="api-btn" onclick="saveKey()">Entrar →</button>
-    <div class="api-note">
-      Obtén tu key en <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
-      La key se guarda solo en tu sesión de navegador y nunca se envía a terceros.
-    </div>
-  </div>
 </div>
 
 <div class="pov" id="pOv">
@@ -307,31 +263,7 @@ const S={cRaw:null,dRaw:null,contacts:[],deals:[],cMap:{},
   segs:{ot:[],occ:[],rec:[],vip:[]},
   noPP:{ot:[],occ:[],rec:[],vip:[]},
   withPP:{ot:[],occ:[],rec:[],vip:[]},
-  actSeg:'all',chatH:[],apiKey:''};
-
-// API KEY
-function saveKey(){
-  const k=document.getElementById('apiInp').value.trim();
-  if(!k.startsWith('sk-ant-')){
-    document.getElementById('apiErr').style.display='block';return;
-  }
-  S.apiKey=k;
-  document.getElementById('apiScreen').style.display='none';
-}
-
-// Llamada a la API usando la key del usuario
-async function callClaude(messages, system, maxTokens=1000){
-  const body={model:'claude-sonnet-4-20250514',max_tokens:maxTokens,messages};
-  if(system)body.system=system;
-  const r=await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':S.apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify(body)
-  });
-  const d=await r.json();
-  if(d.error)throw new Error(d.error.message);
-  return d.content?.[0]?.text||'';
-}
+  actSeg:'all',chatH:[]};
 
 const CC={id:'Sequra ID unique',rfm:'RFM segment',nd:'Number of Associated Deals',
   app:'Download app',fl:'First login app',ll:'Last login app',rd:'Recent Deal Close Date',
@@ -372,14 +304,12 @@ async function processData(){
   S.deals=S.dRaw.map((row,i)=>({_i:i,cid:normId(gv(row,DC.cid)),name:gv(row,DC.name),
     merch:gv(row,DC.merch),sector:gv(row,DC.sector),sub:gv(row,DC.sub),
     sol:gv(row,DC.sol),stage:gv(row,DC.stage),close:gv(row,DC.close),
-    amt:parseFloat(gv(row,DC.amt))||0,chan:gv(row,DC.chan),inst:gv(row,DC.inst),_r:row}));
+    amt:parseFloat(gv(row,DC.amt))||0,chan:gv(row,DC.chan),inst:gv(row,DC.inst)}));
   sp(55,'Cruzando datos...');await slp(80);
   S.cMap={};S.contacts.forEach(c=>{S.cMap[c.id]=c;});
   let matched=0;
   S.deals.forEach(d=>{if(S.cMap[d.cid]){S.cMap[d.cid].deals.push(d);matched++;}});
-  sp(70,'Clasificando segmentos y Part Payment...');await slp(60);
-
-  // Segment + PP classification
+  sp(70,'Clasificando...');await slp(60);
   S.segs={ot:[],occ:[],rec:[],vip:[]};
   S.noPP={ot:[],occ:[],rec:[],vip:[]};
   S.withPP={ot:[],occ:[],rec:[],vip:[]};
@@ -390,7 +320,6 @@ async function processData(){
     if(hasPP){if(S.withPP[c.seg])S.withPP[c.seg].push(c);}
     else{if(S.noPP[c.seg])S.noPP[c.seg].push(c);}
   });
-
   sp(90,'Generando vista...');await slp(60);
   const tot=S.contacts.length;
   const totalNoPP=Object.values(S.noPP).flat().length;
@@ -401,7 +330,6 @@ async function processData(){
   ['ot','occ','rec','vip'].forEach(s=>document.getElementById(`sn-${s}`).textContent=(S.segs[s]?.length||0).toLocaleString());
   document.getElementById('ssS').style.display='block';
   document.getElementById('ssSeg').style.display='block';
-
   sp(100,'Listo');await slp(350);
   document.getElementById('pOv').style.display='none';
   document.getElementById('empt').style.display='none';
@@ -446,36 +374,22 @@ function renderPP(){
   const totalWithPP=Object.values(S.withPP).flat().length;
   const ppPct=tot>0?((totalWithPP/tot)*100).toFixed(1):0;
   const noPpPct=tot>0?((totalNoPP/tot)*100).toFixed(1):0;
-
-  // Hero KPIs
   const ppDeals=S.deals.filter(d=>d.sol==='Part Payment');
   const avgPPamt=ppDeals.length>0?(ppDeals.reduce((a,d)=>a+d.amt,0)/ppDeals.length).toFixed(0):0;
   const nonPPDeals=S.deals.filter(d=>d.sol!=='Part Payment'&&d.sol);
   const avgNonPPamt=nonPPDeals.length>0?(nonPPDeals.reduce((a,d)=>a+d.amt,0)/nonPPDeals.length).toFixed(0):0;
-
   document.getElementById('ppHero').innerHTML=`
     <div class="pp-kpi"><div class="pp-kpi-l">Sin Part Payment</div><div class="pp-kpi-v" style="color:var(--orange)">${noPpPct}%</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${totalNoPP.toLocaleString()} contactos</div></div>
     <div class="pp-kpi"><div class="pp-kpi-l">Con Part Payment</div><div class="pp-kpi-v" style="color:var(--green-app)">${ppPct}%</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${totalWithPP.toLocaleString()} contactos</div></div>
     <div class="pp-kpi"><div class="pp-kpi-l">Ticket medio PP</div><div class="pp-kpi-v" style="color:#fff">€${avgPPamt}</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${ppDeals.length.toLocaleString()} deals</div></div>
     <div class="pp-kpi"><div class="pp-kpi-l">Ticket medio no-PP</div><div class="pp-kpi-v" style="color:rgba(255,255,255,0.6)">€${avgNonPPamt}</div><div class="pp-kpi-s" style="color:rgba(255,255,255,0.4)">${nonPPDeals.length.toLocaleString()} deals</div></div>`;
-
-  // Seg grid
-  const segDefs=[{k:'ot',l:'One-timer',c:'var(--seg0)'},{k:'occ',l:'Occasional',c:'var(--seg1)'},{k:'rec',l:'Recurring',c:'var(--seg2)'},{k:'vip',l:'VIP',c:'var(--seg3)'}];
-  const segInsights={ot:'Mayor volumen de oportunidad. Primera compra fue sin PP — son los más fáciles de convertir.',occ:'Ya tienen historial. Un email mostrando el beneficio del aplazamiento puede activarlos.',rec:'Clientes fieles sin PP — alto valor potencial recurrente si se convierten.',vip:'Pocos, pero de alto valor. Merecen outreach personalizado.'};
+  const segInsights={ot:'Mayor volumen de oportunidad. Primera compra sin PP — los más fáciles de convertir.',occ:'Ya tienen historial. Un email sobre el beneficio del aplazamiento puede activarlos.',rec:'Clientes fieles sin PP — alto valor potencial recurrente si se convierten.',vip:'Pocos pero de alto valor. Merecen outreach personalizado.'};
+  const segDefs=[{k:'ot',l:'One-timer'},{k:'occ',l:'Occasional'},{k:'rec',l:'Recurring'},{k:'vip',l:'VIP'}];
   document.getElementById('ppSegGrid').innerHTML=segDefs.map(d=>{
-    const noPP=S.noPP[d.k]?.length||0;
-    const total=S.segs[d.k]?.length||0;
+    const noPP=S.noPP[d.k]?.length||0,total=S.segs[d.k]?.length||0;
     const pct=total>0?((noPP/total)*100).toFixed(0):0;
-    return`<div class="pp-seg ${d.k}">
-      <div class="pp-seg-label">${d.l}</div>
-      <div class="pp-seg-n" style="color:var(--orange)">${noPP.toLocaleString()}</div>
-      <div class="pp-seg-s">${pct}% del segmento sin PP</div>
-      <div class="pp-mini-bar"><div class="pp-mini-fill" style="width:${pct}%"></div></div>
-      <div class="pp-seg-insight">${segInsights[d.k]}</div>
-    </div>`;
+    return`<div class="pp-seg ${d.k}"><div class="pp-seg-label">${d.l}</div><div class="pp-seg-n" style="color:var(--orange)">${noPP.toLocaleString()}</div><div class="pp-seg-s">${pct}% del segmento sin PP</div><div class="pp-mini-bar"><div class="pp-mini-fill" style="width:${pct}%"></div></div><div class="pp-seg-insight">${segInsights[d.k]}</div></div>`;
   }).join('');
-
-  // Sectores sin PP
   const noPPids=new Set(Object.values(S.noPP).flat().map(c=>c.id));
   const noPPdeals=S.deals.filter(d=>noPPids.has(d.cid));
   const sm={},solm={};
@@ -483,7 +397,6 @@ function renderPP(){
   const ts=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
   const tsol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const maxS=ts[0]?.[1]||1,maxSol=tsol[0]?.[1]||1;
-
   document.getElementById('ppSectors').innerHTML=ts.map(([l,n])=>`<div class="hbr"><span class="hbl">${esc(l)}</span><div class="hbt"><div class="hbf" style="width:${(n/maxS)*100}%;background:var(--orange)"></div></div><span class="hbv">${n.toLocaleString()}</span></div>`).join('');
   document.getElementById('ppCurrentSol').innerHTML=tsol.map(([l,n])=>`<div class="hbr"><span class="hbl">${esc(l)}</span><div class="hbt"><div class="hbf" style="width:${(n/maxSol)*100}%;background:var(--blue-teal)"></div></div><span class="hbv">${n.toLocaleString()}</span></div>`).join('');
 }
@@ -493,68 +406,47 @@ async function ppAiInsights(){
   const totalNoPP=Object.values(S.noPP).flat().length;
   const noPPids=new Set(Object.values(S.noPP).flat().map(c=>c.id));
   const noPPdeals=S.deals.filter(d=>noPPids.has(d.cid));
-  const sm={},solm={};
-  noPPdeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const sm={},solm={};noPPdeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
   const topS=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,n])=>`${s}(${n})`).join(', ');
   const topSol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
-
-  const prompt=`Eres estratega de CRM y email marketing para seQura (BNPL, España). 
-Part Payment es el producto clave: genera fees al merchant y/o shopper, por lo que cada conversión es ingreso directo para seQura.
-
-Datos reales:
-- Base total: ${tot.toLocaleString()} contactos
-- SIN Part Payment: ${totalNoPP.toLocaleString()} (${((totalNoPP/tot)*100).toFixed(1)}%)
-  - One-timer sin PP: ${S.noPP.ot.length.toLocaleString()}
-  - Occasional sin PP: ${S.noPP.occ.length.toLocaleString()}
-  - Recurring sin PP: ${S.noPP.rec.length.toLocaleString()}
-  - VIP sin PP: ${S.noPP.vip.length.toLocaleString()}
-- Solución actual de los sin PP: ${topSol}
-- Sectores principales sin PP: ${topS}
-
-Genera un plan de acción concreto con:
-1. Las 3 audiencias prioritarias a activar hacia Part Payment (con criterios de segmentación exactos)
-2. El mensaje/ángulo clave para cada audiencia (por qué Part Payment les conviene a ellos)
-3. Secuencia de envíos recomendada (cuántos emails, cuándo, qué CTA)
-
-Sé muy específico y accionable. HTML simple con <strong>, <br><br> y •. Sin markdown.`;
-
+  const prompt=`Eres estratega de CRM y email marketing para seQura (BNPL, España). Part Payment es el producto clave: genera fees al merchant y/o shopper, cada conversión es ingreso directo.
+Datos reales: Total ${tot.toLocaleString()} contactos. SIN Part Payment: ${totalNoPP.toLocaleString()} (${((totalNoPP/tot)*100).toFixed(1)}%). One-timer sin PP:${S.noPP.ot.length.toLocaleString()}, Occasional:${S.noPP.occ.length.toLocaleString()}, Recurring:${S.noPP.rec.length.toLocaleString()}, VIP:${S.noPP.vip.length.toLocaleString()}. Solución actual:${topSol}. Sectores:${topS}.
+Genera: 1) Las 3 audiencias prioritarias a activar hacia Part Payment con criterios exactos 2) Mensaje/ángulo clave para cada audiencia 3) Secuencia de envíos recomendada. HTML simple con <strong>, <br><br> y •.`;
   document.getElementById('ppAiSt').textContent='Generando con Claude...';
   try{
-    const txt=await callClaude([{role:'user',content:prompt}],null,1200);
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
     document.getElementById('ppAiSt').textContent='Generado por Claude';
-    document.getElementById('ppAiBody').innerHTML=txt||ppFallback();
+    document.getElementById('ppAiBody').innerHTML=d.content?.[0]?.text||ppFallback();
   }catch{document.getElementById('ppAiSt').textContent='Análisis local';document.getElementById('ppAiBody').innerHTML=ppFallback();}
 }
 
 function ppFallback(){
-  const noPP=Object.values(S.noPP).flat().length;
   return`<strong>Audiencias prioritarias:</strong><br><br>
-• <strong>One-timers con Invoice en fashion/home (${S.noPP.ot.length.toLocaleString()} contactos):</strong> Son tu mayor bolsa. Compraron una vez y pagaron de golpe — nunca han experimentado el aplazamiento. Email con ángulo "compra más, paga poco a poco".<br><br>
-• <strong>Occasional con Invoice activos (${S.noPP.occ.length.toLocaleString()} contactos):</strong> Ya repiten pero no usan PP. El argumento es el ahorro de liquidez: "ya que compras regularmente, no inmovilices tu dinero".<br><br>
-• <strong>Recurring sin PP (${S.noPP.rec.length.toLocaleString()} contactos):</strong> Alta frecuencia, nunca han probado PP. Son los de mayor LTV potencial — un descuento en la primera cuota puede ser el detonante.<br><br>
+• <strong>One-timers con Invoice en fashion/home (${S.noPP.ot.length.toLocaleString()} contactos):</strong> Compraron una vez y pagaron de golpe — nunca han experimentado el aplazamiento. Email con ángulo "compra más, paga poco a poco".<br><br>
+• <strong>Occasional con Invoice activos (${S.noPP.occ.length.toLocaleString()} contactos):</strong> Ya repiten pero no usan PP. Argumento: "ya que compras regularmente, no inmovilices tu dinero".<br><br>
+• <strong>Recurring sin PP (${S.noPP.rec.length.toLocaleString()} contactos):</strong> Alta frecuencia, nunca han probado PP. Son los de mayor LTV potencial.<br><br>
 <strong>Secuencia recomendada:</strong><br><br>
 • Email 1 — Awareness: "¿Sabías que puedes fraccionar tus compras en seQura?" + CTA a merchant partner top.<br>
-• Email 2 (7 días después) — Beneficio concreto: calculadora de cuotas personalizada con su ticket medio.<br>
-• Email 3 (14 días después) — Urgencia: oferta limitada en merchant de su sector habitual con Part Payment activado.`;
+• Email 2 (7 días) — Beneficio: calculadora de cuotas con su ticket medio.<br>
+• Email 3 (14 días) — Urgencia: oferta limitada en su sector habitual con Part Payment activado.`;
 }
 
 async function aiInsights(){
   const tot=S.contacts.length;
-  const sm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;});
-  const solm={};S.deals.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const sm={},solm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
   const tS=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}(${n})`).join(', ');
   const tSol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
   const wA=S.contacts.filter(c=>c.app&&c.app.toLowerCase()==='sí').length;
   const totalNoPP=Object.values(S.noPP).flat().length;
-  const prompt=`Eres analista senior CRM para seQura (BNPL, España). Part Payment es el producto clave de ingresos.
-Datos: Total ${tot.toLocaleString()} contactos. One-timer:${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), Occasional:${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), Recurring:${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP:${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). App:${((wA/tot)*100).toFixed(1)}%. Sin Part Payment:${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%). Sectores:${tS}. Soluciones:${tSol}.
-Genera 3 insights clave + 3 recomendaciones de campaña en español. HTML simple con <strong> y •.`;
+  const prompt=`Eres analista senior CRM para seQura (BNPL, España). Part Payment es el producto clave de ingresos. Datos: Total ${tot.toLocaleString()} contactos. One-timer:${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), Occasional:${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), Recurring:${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP:${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). App:${((wA/tot)*100).toFixed(1)}%. Sin PP:${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%). Sectores:${tS}. Soluciones:${tSol}. Genera 3 insights + 3 recomendaciones campaña. Español. HTML con <strong> y •.`;
   document.getElementById('aiSt').textContent='Generando...';
   try{
-    const txt=await callClaude([{role:'user',content:prompt}],null,800);
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
     document.getElementById('aiSt').textContent='Generado por Claude';
-    document.getElementById('aiBody').innerHTML=txt||'Sin conexión.';
-  }catch{document.getElementById('aiSt').textContent='Sin conexión';document.getElementById('aiBody').innerHTML='Activa la conexión a la API para generar insights.';}
+    document.getElementById('aiBody').innerHTML=d.content?.[0]?.text||'Sin conexión.';
+  }catch{document.getElementById('aiSt').textContent='Sin conexión';document.getElementById('aiBody').innerHTML='Activa la API para generar insights.';}
 }
 
 function fSeg(s){S.actSeg=s;document.querySelectorAll('.spill').forEach(p=>p.classList.remove('on'));document.getElementById(`sp-${s}`).classList.add('on');renderOv();}
@@ -570,24 +462,9 @@ function doSearch(){
   document.getElementById('srRes').innerHTML=res.map(c=>{
     const deals=c.deals||[];const totA=deals.reduce((a,d)=>a+d.amt,0);
     const ppTag=c.hasPP?`<span class="tag pp">✓ Part Payment</span>`:`<span class="tag npp">Sin Part Payment</span>`;
-    return`<div class="ccard">
-      <div class="cchd">
-        <div style="flex:1"><div class="ccname">ID ${esc(c.id)} ${ppTag}</div><div class="ccid">RFM: ${esc(c.rfm)||'—'} · ${esc(c.cd||'').split(' ')[0]}</div></div>
-        <div class="ccbadge" style="background:${sbg[c.seg]};color:${sc[c.seg]};border:1px solid ${sc[c.seg]}33">${sl[c.seg]}</div>
-      </div>
-      <div class="cckpis">
-        <div class="ck"><div class="ckl">Compras</div><div class="ckv" style="color:${sc[c.seg]}">${c.nd}</div></div>
-        <div class="ck"><div class="ckl">Deals cruzados</div><div class="ckv">${deals.length}</div></div>
-        <div class="ck"><div class="ckl">Importe total</div><div class="ckv">€${totA.toLocaleString('es',{maximumFractionDigits:0})}</div></div>
-        <div class="ck"><div class="ckl">App</div><div class="ckv" style="font-size:12px">${c.app||'—'}</div></div>
-        <div class="ck"><div class="ckl">Último deal</div><div class="ckv" style="font-size:11px">${(c.rd||'—').split(' ')[0]}</div></div>
-      </div>
-      ${deals.length?`<div class="ct" style="margin-bottom:8px">Deals (${deals.length})</div>
-        <div style="overflow-x:auto"><table class="dtbl">
-          <tr><th>Merchant</th><th>Sector</th><th>Solución</th><th>Importe</th><th>Cierre</th></tr>
-          ${deals.slice(0,8).map(d=>`<tr><td>${esc(d.merch)||'—'}</td><td>${esc(d.sector)||'—'}</td><td><span class="tag ${d.sol==='Part Payment'?'pp':''}">${esc(d.sol)||'—'}</span></td><td>€${d.amt.toFixed(0)}</td><td>${(esc(d.close)||'—').split(' ')[0]}</td></tr>`).join('')}
-          ${deals.length>8?`<tr><td colspan="5" style="color:var(--muted);font-size:11px;font-family:var(--mono)">+${deals.length-8} más</td></tr>`:''}
-        </table></div>`:''}
+    return`<div class="ccard"><div class="cchd"><div style="flex:1"><div class="ccname">ID ${esc(c.id)} ${ppTag}</div><div class="ccid">RFM: ${esc(c.rfm)||'—'} · ${esc(c.cd||'').split(' ')[0]}</div></div><div class="ccbadge" style="background:${sbg[c.seg]};color:${sc[c.seg]};border:1px solid ${sc[c.seg]}33">${sl[c.seg]}</div></div>
+    <div class="cckpis"><div class="ck"><div class="ckl">Compras</div><div class="ckv" style="color:${sc[c.seg]}">${c.nd}</div></div><div class="ck"><div class="ckl">Deals cruzados</div><div class="ckv">${deals.length}</div></div><div class="ck"><div class="ckl">Importe total</div><div class="ckv">€${totA.toLocaleString('es',{maximumFractionDigits:0})}</div></div><div class="ck"><div class="ckl">App</div><div class="ckv" style="font-size:12px">${c.app||'—'}</div></div><div class="ck"><div class="ckl">Último deal</div><div class="ckv" style="font-size:11px">${(c.rd||'—').split(' ')[0]}</div></div></div>
+    ${deals.length?`<div class="ct" style="margin-bottom:8px">Deals (${deals.length})</div><div style="overflow-x:auto"><table class="dtbl"><tr><th>Merchant</th><th>Sector</th><th>Solución</th><th>Importe</th><th>Cierre</th></tr>${deals.slice(0,8).map(d=>`<tr><td>${esc(d.merch)||'—'}</td><td>${esc(d.sector)||'—'}</td><td><span class="tag ${d.sol==='Part Payment'?'pp':''}">${esc(d.sol)||'—'}</span></td><td>€${d.amt.toFixed(0)}</td><td>${(esc(d.close)||'—').split(' ')[0]}</td></tr>`).join('')}${deals.length>8?`<tr><td colspan="5" style="color:var(--muted);font-size:11px;font-family:var(--mono)">+${deals.length-8} más</td></tr>`:''}</table></div>`:''}
     </div>`;
   }).join('');
 }
@@ -596,7 +473,7 @@ function buildCtx(){
   const tot=S.contacts.length;
   const totalNoPP=Object.values(S.noPP).flat().length;
   const sm={},solm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
-  return`Base seQura (${tot.toLocaleString()} contactos). Segmentos: One-timer ${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), Occasional ${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), Recurring ${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP ${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). SIN Part Payment: ${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%) — One-timer:${S.noPP.ot.length}, Occasional:${S.noPP.occ.length}, Recurring:${S.noPP.rec.length}, VIP:${S.noPP.vip.length}. Deals:${S.deals.length.toLocaleString()}. Top sectores:${Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}:${n}`).join(',')}. Soluciones:${Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}:${n}`).join(',')}. Part Payment es el producto clave de ingresos de seQura.`;
+  return`Base seQura (${tot.toLocaleString()} contactos). Segmentos: OT ${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), OCC ${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), REC ${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP ${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). SIN Part Payment: ${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%) — OT:${S.noPP.ot.length}, OCC:${S.noPP.occ.length}, REC:${S.noPP.rec.length}, VIP:${S.noPP.vip.length}. Deals:${S.deals.length.toLocaleString()}. Sectores:${Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}:${n}`).join(',')}. Soluciones:${Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}:${n}`).join(',')}. Part Payment es el producto clave de ingresos.`;
 }
 
 async function sendMsg(){
@@ -604,9 +481,10 @@ async function sendMsg(){
   if(!msg)return;inp.value='';document.getElementById('csend').disabled=true;
   addMsg('u',msg);S.chatH.push({role:'user',content:msg});const tid=addTyping();
   try{
-    const rep=await callClaude(S.chatH,`Eres analista experto CRM y email marketing para seQura (BNPL, España). Responde en español, conciso y accionable. ${buildCtx()}`);
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`Eres analista experto CRM y email marketing para seQura (BNPL, España). Responde en español, conciso y accionable. ${buildCtx()}`,messages:S.chatH})});
+    const d=await r.json();const rep=d.content?.[0]?.text||'Sin respuesta.';
     rmT(tid);addMsg('b',rep);S.chatH.push({role:'assistant',content:rep});
-  }catch{rmT(tid);addMsg('b','Error de conexión. Verifica tu API key.');}
+  }catch{rmT(tid);addMsg('b','Error de conexión.');}
   document.getElementById('csend').disabled=false;
 }
 
@@ -624,7 +502,7 @@ function showV(v){
   const map={ov:'vOv',pp:'vPP',sr:'vSr',ch:'vCh'};
   Object.entries(map).forEach(([k,id])=>{document.getElementById(id).style.display=k===v?(k==='ch'?'flex':'block'):'none';});
   document.querySelectorAll('.vt').forEach((t,i)=>{t.classList.toggle('on',['ov','pp','sr','ch'][i]===v);});
-  if(v==='ch'&&!document.getElementById('chatMsgs').children.length)addMsg('b','¡Hola! Tengo los datos cargados con info de Part Payment. ¿Qué quieres analizar o generar?');
+  if(v==='ch'&&!document.getElementById('chatMsgs').children.length)addMsg('b','¡Hola! Tengo los datos cargados con info de Part Payment. ¿Qué quieres analizar?');
 }
 </script>
 </body>
