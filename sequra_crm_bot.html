@@ -5,205 +5,165 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>seQura — CRM Segment Bot</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-  :root {
-    --bg:#f5f5f3;--bg2:#fff;--bg3:#f1efe8;--bg4:#e8e6df;
-    --border:#d3d1c7;--border2:#b4b2a9;
-    --text:#1a1a18;--muted:#73726c;--muted2:#5f5e5a;
-    --green:#05C2A5;--green-app:#21CFAC;--green-pale:#e6faf8;
-    --orange:#d97706;--orange-pale:#fef3c7;
-    --seg0:#888780;--seg1:#05C2A5;--seg2:#378ADD;--seg3:#7F77DD;
-    --r:10px;--font:'Inter',sans-serif;--mono:'ui-monospace','SFMono-Regular',monospace;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
-
-  /* LAYOUT */
-  .shell{display:grid;grid-template-columns:240px 1fr;grid-template-rows:52px 1fr;min-height:100vh;}
-  .topbar{grid-column:1/-1;background:var(--text);display:flex;align-items:center;padding:0 20px;gap:12px;}
-  .tlogo{font-size:14px;font-weight:600;color:var(--green-app);letter-spacing:-.01em;}
-  .tsep{width:1px;height:16px;background:rgba(255,255,255,0.15);}
-  .ttitle{font-size:12px;color:rgba(255,255,255,0.4);}
-  .tstatus{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--mono);color:rgba(255,255,255,0.3);}
-  .sdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,0.2);}
-  .sdot.on{background:var(--green-app);}
-
-  /* SIDEBAR */
-  .sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:18px 0;overflow-y:auto;}
-  .sbs{padding:0 14px;margin-bottom:20px;}
-  .sbl{font-size:10px;font-family:var(--mono);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
-  .uz{border:1px dashed var(--border);border-radius:8px;padding:11px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:6px;background:var(--bg);}
-  .uz:hover{border-color:var(--green);background:var(--green-pale);}
-  .uz.loaded{border-color:var(--green);border-style:solid;background:var(--green-pale);}
-  .ui{font-size:16px;margin-bottom:2px;}.ul{font-size:12px;color:var(--muted2);font-weight:500;}
-  .us{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--mono);}
-  .uok{font-size:10px;color:var(--green);font-family:var(--mono);margin-top:3px;display:none;}
-  input[type=file]{display:none;}
-  .gobtn{width:100%;padding:9px;background:var(--text);color:#fff;border:none;border-radius:7px;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer;margin-top:8px;transition:opacity .15s;}
-  .gobtn:hover{opacity:.85;}.gobtn:disabled{opacity:.3;cursor:not-allowed;}
-  .mstat{background:var(--bg3);border-radius:7px;padding:9px 11px;margin-bottom:5px;}
-  .msl{font-size:10px;color:var(--muted);font-family:var(--mono);}.msv{font-size:16px;font-weight:600;}
-  .spill{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:7px;margin-bottom:2px;cursor:pointer;font-size:13px;transition:background .15s;}
-  .spill:hover{background:var(--bg3);}.spill.on{background:var(--bg3);}
-  .sdotc{width:7px;height:7px;border-radius:50%;flex-shrink:0;}.sname{flex:1;color:var(--text);}
-  .sn{font-family:var(--mono);font-size:11px;color:var(--muted);}
-
-  /* MAIN */
-  .main{background:var(--bg);overflow-y:auto;display:flex;flex-direction:column;}
-
-  /* EMPTY */
-  .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;gap:10px;}
-  .eico{width:52px;height:52px;border-radius:14px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:8px;}
-  .etit{font-size:20px;font-weight:500;}.esub{font-size:13px;color:var(--muted);max-width:360px;line-height:1.6;}
-  .steps{display:flex;gap:10px;margin-top:20px;}
-  .step{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:14px;width:140px;text-align:left;}
-  .stepn{font-family:var(--mono);font-size:10px;color:var(--green);margin-bottom:5px;}
-  .stept{font-size:11px;color:var(--muted);line-height:1.5;}
-
-  /* RESULTS */
-  .rw{padding:20px 24px;}
-  .vtabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
-  .vt{padding:6px 14px;border:0.5px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;background:var(--bg2);color:var(--muted);font-weight:500;transition:all .15s;}
-  .vt:hover{background:var(--bg3);color:var(--text);}
-  .vt.on{background:var(--bg3);color:var(--text);border-color:var(--border2);font-weight:500;}
-  .vt.pp.on{background:var(--orange-pale);border-color:var(--orange);color:var(--orange);}
-
-  /* SEG HEADER */
-  .seg-header{margin-bottom:18px;}
-  .seg-title{font-size:20px;font-weight:500;margin-bottom:3px;}
-  .seg-sub{font-size:12px;color:var(--muted);}
-
-  /* PENETRATION */
-  .pen-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
-  .pen-card{background:var(--bg3);border-radius:8px;padding:14px 16px;}
-  .pen-label{font-size:11px;color:var(--muted);margin-bottom:3px;}
-  .pen-val{font-size:24px;font-weight:500;}
-  .pen-sub{font-size:11px;color:var(--muted);margin-top:3px;}
-  .pen-bar-track{height:4px;border-radius:2px;background:var(--border);margin-top:10px;overflow:hidden;}
-  .pen-bar-fill{height:100%;border-radius:2px;}
-  hr.div{border:none;border-top:0.5px solid var(--border);margin:14px 0;}
-
-  /* KPI GRID */
-  .kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-  .kpi3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
-  .kpi{background:var(--bg3);border-radius:8px;padding:12px;}
-  .kpi-l{font-size:11px;color:var(--muted);margin-bottom:3px;}
-  .kpi-v{font-size:20px;font-weight:500;}
-  .kpi-s{font-size:11px;color:var(--muted);margin-top:2px;}
-
-  /* ROWS */
-  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-  .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px;}
-
-  /* CARDS */
-  .card{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:14px;}
-  .card-t{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px;}
-
-  /* BARS */
-  .br{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
-  .bl{width:60px;color:var(--muted);flex-shrink:0;text-align:right;font-size:11px;}
-  .bt{flex:1;background:var(--bg3);border-radius:2px;height:6px;overflow:hidden;}
-  .bf{height:100%;border-radius:2px;}
-  .bv{width:36px;color:var(--text);font-weight:500;flex-shrink:0;font-size:12px;}
-
-  /* STAT ROWS */
-  .sr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:0.5px solid var(--bg4);font-size:12px;}
-  .sr:last-child{border-bottom:none;}
-  .sr-l{color:var(--muted);}.sr-v{font-weight:500;}
-
-  /* INSIGHT */
-  .insight{background:var(--bg3);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--muted2);line-height:1.6;border-left:3px solid;margin-top:4px;}
-
-  /* AI BOX */
-  .aibox{background:var(--bg3);border:0.5px solid var(--border);border-left:3px solid var(--green);border-radius:8px;padding:14px 16px;margin-bottom:12px;}
-  .aibox.orange{border-left-color:var(--orange);}
-  .aihd{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-  .aitag{font-family:var(--mono);font-size:10px;color:var(--green);letter-spacing:.07em;text-transform:uppercase;}
-  .aitag.orange{color:var(--orange);}
-  .aist{font-size:11px;color:var(--muted);font-family:var(--mono);}
-  .aibody{font-size:13px;color:var(--muted2);line-height:1.7;}
-  .aibody strong{color:var(--text);font-weight:500;}
-
-  /* PP */
-  .pp-hero{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-  .pp-seg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-  .pp-seg{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden;}
-  .pp-seg::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-  .pp-seg.ot::before{background:var(--seg0);}.pp-seg.occ::before{background:var(--seg1);}
-  .pp-seg.rec::before{background:var(--seg2);}.pp-seg.vip::before{background:var(--seg3);}
-  .pp-seg-l{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-  .pp-seg-n{font-size:22px;font-weight:500;margin-bottom:2px;color:var(--orange);}
-  .pp-seg-s{font-size:11px;color:var(--muted);margin-bottom:8px;}
-  .pp-mbar{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-bottom:7px;}
-  .pp-mfill{height:100%;border-radius:2px;background:var(--orange);}
-  .pp-seg-i{font-size:11px;color:var(--muted2);line-height:1.5;}
-
-  /* SEARCH */
-  .sbrow{display:flex;gap:8px;margin-bottom:14px;}
-  .sbinp{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:7px;padding:9px 12px;font-family:var(--mono);font-size:12px;color:var(--text);outline:none;transition:border-color .15s;}
-  .sbinp:focus{border-color:var(--green);}.sbinp::placeholder{color:var(--muted);}
-  .sbbtn{background:var(--text);border:none;border-radius:7px;padding:9px 16px;font-size:12px;font-family:var(--font);color:#fff;font-weight:500;cursor:pointer;}
-  .sbbtn:hover{opacity:.85;}
-  .ccard{background:var(--bg2);border:0.5px solid var(--border);border-radius:10px;padding:18px;margin-bottom:10px;}
-  .cchd{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;padding-bottom:12px;border-bottom:0.5px solid var(--border);}
-  .ccbadge{padding:3px 9px;border-radius:5px;font-size:11px;font-family:var(--mono);font-weight:500;flex-shrink:0;}
-  .ccid{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px;}
-  .ccname{font-size:15px;font-weight:500;}
-  .cckpis{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
-  .ck{background:var(--bg3);border-radius:7px;padding:9px 11px;}
-  .ckl{font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:2px;}.ckv{font-size:15px;font-weight:500;}
-  .dtbl{width:100%;border-collapse:collapse;font-size:12px;}
-  .dtbl th{text-align:left;padding:5px 9px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;color:var(--muted);border-bottom:0.5px solid var(--border);text-transform:uppercase;}
-  .dtbl td{padding:7px 9px;border-bottom:0.5px solid var(--border);color:var(--muted2);}
-  .dtbl tr:last-child td{border-bottom:none;}.dtbl tr:hover td{background:var(--bg3);}
-
-  /* CHAT */
-  .chatmsgs{padding-bottom:12px;display:flex;flex-direction:column;}
-  .cinrow{display:flex;gap:8px;padding:12px 0 0;border-top:0.5px solid var(--border);margin-top:12px;}
-  .cin{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:7px;padding:9px 12px;font-family:var(--font);font-size:13px;color:var(--text);outline:none;resize:none;height:38px;transition:border-color .15s;}
-  .cin:focus{border-color:var(--green);}.cin::placeholder{color:var(--muted);}
-  .csend{background:var(--text);border:none;border-radius:7px;padding:0 16px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;}
-  .csend:hover{opacity:.85;}.csend:disabled{opacity:.35;cursor:not-allowed;}
-  .msg{margin-bottom:10px;}
-  .msgu{display:flex;justify-content:flex-end;}
-  .msgu .bub{background:var(--bg3);border:0.5px solid var(--border);border-radius:10px 10px 2px 10px;padding:9px 13px;max-width:65%;font-size:13px;line-height:1.6;color:var(--text);}
-  .msgb{display:flex;gap:8px;align-items:flex-start;}
-  .bav{width:26px;height:26px;flex-shrink:0;background:var(--text);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--green-app);font-family:var(--mono);margin-top:2px;}
-  .msgb .bub{background:var(--bg2);border:0.5px solid var(--border);border-radius:2px 10px 10px 10px;padding:11px 13px;flex:1;font-size:13px;color:var(--muted2);line-height:1.7;}
-  .msgb .bub strong{color:var(--text);font-weight:500;}
-
-  .td{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);margin:0 2px;animation:blink 1.2s infinite;}
-  .td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
-  @keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
-
-  /* PROGRESS */
-  .pov{position:fixed;inset:0;background:rgba(245,245,243,.9);display:none;align-items:center;justify-content:center;z-index:100;}
-  .pbox{background:var(--bg2);border:0.5px solid var(--border2);border-radius:12px;padding:28px 36px;text-align:center;min-width:280px;}
-  .spin{width:30px;height:30px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .pt{font-size:14px;font-weight:500;margin-bottom:3px;}.ps{font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:14px;}
-  .ptr{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
-  .pf{height:100%;background:var(--green);border-radius:2px;transition:width .3s;width:0%;}
-
-  .nores{text-align:center;padding:36px;color:var(--muted);font-size:13px;}
-  .tag{display:inline-block;padding:2px 6px;border-radius:3px;font-size:10px;font-family:var(--mono);background:var(--bg3);color:var(--muted2);border:0.5px solid var(--border);}
-  .tag.pp{background:var(--green-pale);color:var(--green);}
-  .tag.npp{background:var(--orange-pale);color:var(--orange);}
-  .source-note{font-size:11px;color:var(--border2);margin-top:24px;padding-top:14px;border-top:0.5px solid var(--border);}
-
-  @media(max-width:700px){.kpi4{grid-template-columns:1fr 1fr;}.row3{grid-template-columns:1fr;}.row4{grid-template-columns:1fr 1fr;}.pp-seg-grid{grid-template-columns:1fr 1fr;}}
-  ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+:root {
+  --bg:#f5f5f3;--bg2:#fff;--bg3:#f1efe8;--bg4:#e8e6df;
+  --border:#d3d1c7;--border2:#b4b2a9;
+  --text:#1a1a18;--muted:#73726c;--muted2:#5f5e5a;
+  --green:#05C2A5;--gapp:#21CFAC;--gpale:#e6faf8;
+  --orange:#d97706;--opale:#fef3c7;
+  --seg0:#888780;--seg1:#05C2A5;--seg2:#378ADD;--seg3:#7F77DD;
+  --r:10px;--f:'Inter',sans-serif;--m:'ui-monospace','SFMono-Regular',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--f);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+.shell{display:grid;grid-template-columns:240px 1fr;grid-template-rows:52px 1fr;min-height:100vh;}
+.topbar{grid-column:1/-1;background:var(--text);display:flex;align-items:center;padding:0 20px;gap:12px;}
+.tl{font-size:14px;font-weight:600;color:var(--gapp);}
+.ts{width:1px;height:16px;background:rgba(255,255,255,.15);}
+.tt{font-size:12px;color:rgba(255,255,255,.4);}
+.tst{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--m);color:rgba(255,255,255,.3);}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);}
+.dot.on{background:var(--gapp);}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);padding:16px 0;overflow-y:auto;}
+.sbs{padding:0 12px;margin-bottom:18px;}
+.sbl{font-size:10px;font-family:var(--m);letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin-bottom:7px;}
+.uz{border:1px dashed var(--border);border-radius:7px;padding:10px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:5px;background:var(--bg);}
+.uz:hover,.uz.loaded{border-color:var(--green);background:var(--gpale);}
+.uz.loaded{border-style:solid;}
+.ui{font-size:15px;margin-bottom:2px;}.ul{font-size:11px;color:var(--muted2);font-weight:500;}
+.us{font-size:10px;color:var(--muted);margin-top:2px;font-family:var(--m);}
+.uok{font-size:10px;color:var(--green);font-family:var(--m);margin-top:3px;display:none;}
+input[type=file]{display:none;}
+.gobtn{width:100%;padding:8px;background:var(--text);color:#fff;border:none;border-radius:6px;font-family:var(--f);font-size:12px;font-weight:600;cursor:pointer;margin-top:7px;transition:opacity .15s;}
+.gobtn:hover{opacity:.85;}.gobtn:disabled{opacity:.3;cursor:not-allowed;}
+.mstat{background:var(--bg3);border-radius:6px;padding:8px 10px;margin-bottom:4px;}
+.msl{font-size:10px;color:var(--muted);font-family:var(--m);}.msv{font-size:15px;font-weight:600;}
+.spill{display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:6px;margin-bottom:2px;cursor:pointer;font-size:12px;transition:background .15s;}
+.spill:hover{background:var(--bg3);}.spill.on{background:var(--bg3);}
+.sdc{width:7px;height:7px;border-radius:50%;flex-shrink:0;}.sn2{flex:1;color:var(--text);}
+.snc{font-family:var(--m);font-size:10px;color:var(--muted);}
+.main{background:var(--bg);overflow-y:auto;display:flex;flex-direction:column;}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;text-align:center;gap:10px;}
+.eico{width:50px;height:50px;border-radius:14px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:6px;}
+.etit{font-size:19px;font-weight:500;}.esub{font-size:13px;color:var(--muted);max-width:380px;line-height:1.6;}
+.steps{display:flex;gap:8px;margin-top:18px;}
+.step{background:var(--bg2);border:0.5px solid var(--border);border-radius:8px;padding:12px;width:130px;text-align:left;}
+.stepn{font-family:var(--m);font-size:10px;color:var(--green);margin-bottom:4px;}
+.stept{font-size:11px;color:var(--muted);line-height:1.5;}
+.rw{padding:18px 22px;}
+.vtabs{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap;}
+.vt{padding:5px 13px;border:0.5px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;background:var(--bg2);color:var(--muted);font-weight:500;transition:all .15s;}
+.vt:hover{background:var(--bg3);color:var(--text);}
+.vt.on{background:var(--bg3);color:var(--text);border-color:var(--border2);}
+.vt.pp.on{background:var(--opale);border-color:var(--orange);color:var(--orange);}
+.seg-hd{margin-bottom:14px;}
+.seg-t{font-size:19px;font-weight:500;margin-bottom:2px;}
+.seg-s{font-size:12px;color:var(--muted);}
+.pen-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:13px;}
+.pen-card{background:var(--bg3);border-radius:8px;padding:13px 15px;}
+.pen-lbl{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.pen-val{font-size:23px;font-weight:500;}
+.pen-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.pbt{height:4px;border-radius:2px;background:var(--border);margin-top:9px;overflow:hidden;}
+.pbf{height:100%;border-radius:2px;}
+hr.dv{border:none;border-top:0.5px solid var(--border);margin:13px 0;}
+.kpi4{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:13px;}
+.kpi5{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-bottom:13px;}
+.kpi6{display:grid;grid-template-columns:repeat(6,1fr);gap:9px;margin-bottom:13px;}
+.kpi{background:var(--bg3);border-radius:7px;padding:11px;}
+.kl{font-size:10px;color:var(--muted);margin-bottom:2px;}.kv{font-size:18px;font-weight:500;}
+.ks{font-size:10px;color:var(--muted);margin-top:1px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:11px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:11px;}
+.row4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:11px;margin-bottom:11px;}
+.card{background:var(--bg2);border:0.5px solid var(--border);border-radius:9px;padding:13px;}
+.ct{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.br{display:flex;align-items:center;gap:7px;margin-bottom:6px;}
+.bl{width:120px;color:var(--muted);flex-shrink:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bt{flex:1;background:var(--bg3);border-radius:2px;height:5px;overflow:hidden;}
+.bff{height:100%;border-radius:2px;}
+.bv{width:38px;color:var(--text);font-weight:500;flex-shrink:0;font-size:11px;text-align:right;}
+.sr{display:flex;justify-content:space-between;align-items:baseline;padding:4px 0;border-bottom:0.5px solid var(--bg4);font-size:11px;}
+.sr:last-child{border-bottom:none;}
+.sr-l{color:var(--muted);}.sr-v{font-weight:500;}
+.insight{background:var(--bg3);border-radius:7px;padding:11px 13px;font-size:12px;color:var(--muted2);line-height:1.6;border-left:3px solid;margin-top:4px;}
+.aibox{background:var(--bg3);border:0.5px solid var(--border);border-left:3px solid var(--green);border-radius:7px;padding:13px 15px;margin-bottom:11px;}
+.aibox.or{border-left-color:var(--orange);}
+.aibox.bl2{border-left-color:var(--seg2);}
+.aihd{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.aitg{font-family:var(--m);font-size:10px;color:var(--green);letter-spacing:.07em;text-transform:uppercase;}
+.aitg.or{color:var(--orange);}.aitg.bl2{color:var(--seg2);}
+.aist{font-size:10px;color:var(--muted);font-family:var(--m);}
+.aibody{font-size:12px;color:var(--muted2);line-height:1.7;}
+.aibody strong{color:var(--text);font-weight:500;}
+/* PP */
+.pp-sg{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:13px;}
+.pp-s{background:var(--bg2);border:0.5px solid var(--border);border-radius:9px;padding:13px;position:relative;overflow:hidden;}
+.pp-s::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.pp-s.ot::before{background:var(--seg0);}.pp-s.occ::before{background:var(--seg1);}
+.pp-s.rec::before{background:var(--seg2);}.pp-s.vip::before{background:var(--seg3);}
+.ppl{font-size:10px;color:var(--muted);font-family:var(--m);text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.ppn{font-size:20px;font-weight:500;margin-bottom:2px;color:var(--orange);}
+.pps{font-size:10px;color:var(--muted);margin-bottom:7px;}
+.ppmb{height:3px;border-radius:2px;background:var(--border);overflow:hidden;margin-bottom:6px;}
+.ppmf{height:100%;border-radius:2px;background:var(--orange);}
+.ppi{font-size:10px;color:var(--muted2);line-height:1.5;}
+/* SEARCH */
+.sbrow{display:flex;gap:7px;margin-bottom:13px;}
+.sbinp{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:8px 11px;font-family:var(--m);font-size:12px;color:var(--text);outline:none;}
+.sbinp:focus{border-color:var(--green);}
+.sbinp::placeholder{color:var(--muted);}
+.sbbtn{background:var(--text);border:none;border-radius:6px;padding:8px 14px;font-size:12px;font-family:var(--f);color:#fff;font-weight:500;cursor:pointer;}
+.sbbtn:hover{opacity:.85;}
+.ccard{background:var(--bg2);border:0.5px solid var(--border);border-radius:9px;padding:16px;margin-bottom:9px;}
+.cchd{display:flex;align-items:flex-start;gap:11px;margin-bottom:11px;padding-bottom:11px;border-bottom:0.5px solid var(--border);}
+.ccbdg{padding:3px 8px;border-radius:4px;font-size:10px;font-family:var(--m);font-weight:500;flex-shrink:0;}
+.ccid{font-family:var(--m);font-size:10px;color:var(--muted);margin-top:2px;}
+.ccnm{font-size:14px;font-weight:500;}
+.cckpis{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:9px;}
+.ck{background:var(--bg3);border-radius:6px;padding:8px 10px;}
+.ckl{font-size:9px;color:var(--muted);font-family:var(--m);margin-bottom:2px;}.ckv{font-size:13px;font-weight:500;}
+/* CHAT */
+.chatmsgs{padding-bottom:10px;display:flex;flex-direction:column;}
+.cinrow{display:flex;gap:7px;padding:11px 0 0;border-top:0.5px solid var(--border);margin-top:11px;}
+.cin{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:6px;padding:8px 11px;font-family:var(--f);font-size:12px;color:var(--text);outline:none;resize:none;height:36px;}
+.cin:focus{border-color:var(--green);}.cin::placeholder{color:var(--muted);}
+.csend{background:var(--text);border:none;border-radius:6px;padding:0 14px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;}
+.csend:hover{opacity:.85;}.csend:disabled{opacity:.35;cursor:not-allowed;}
+.msg{margin-bottom:9px;}
+.msgu{display:flex;justify-content:flex-end;}
+.msgu .bub{background:var(--bg3);border:0.5px solid var(--border);border-radius:9px 9px 2px 9px;padding:8px 12px;max-width:65%;font-size:12px;line-height:1.6;}
+.msgb{display:flex;gap:7px;align-items:flex-start;}
+.bav{width:24px;height:24px;flex-shrink:0;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:var(--gapp);font-family:var(--m);margin-top:2px;}
+.msgb .bub{background:var(--bg2);border:0.5px solid var(--border);border-radius:2px 9px 9px 9px;padding:10px 12px;flex:1;font-size:12px;color:var(--muted2);line-height:1.7;}
+.msgb .bub strong{color:var(--text);font-weight:500;}
+.td{display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--muted);margin:0 2px;animation:blink 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s;}.td:nth-child(3){animation-delay:.4s;}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.pov{position:fixed;inset:0;background:rgba(245,245,243,.9);display:none;align-items:center;justify-content:center;z-index:100;}
+.pbox{background:var(--bg2);border:0.5px solid var(--border2);border-radius:11px;padding:26px 34px;text-align:center;min-width:270px;}
+.spin{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 11px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pt{font-size:14px;font-weight:500;margin-bottom:3px;}.ps{font-size:10px;color:var(--muted);font-family:var(--m);margin-bottom:13px;}
+.ptr{height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;}
+.pf{height:100%;background:var(--green);border-radius:2px;transition:width .3s;width:0%;}
+.nores{text-align:center;padding:34px;color:var(--muted);font-size:12px;}
+.tag{display:inline-block;padding:2px 5px;border-radius:3px;font-size:9px;font-family:var(--m);background:var(--bg3);color:var(--muted2);border:0.5px solid var(--border);}
+.tag.pp{background:var(--gpale);color:var(--green);}.tag.npp{background:var(--opale);color:var(--orange);}
+.snote{font-size:10px;color:var(--border2);margin-top:18px;padding-top:11px;border-top:0.5px solid var(--border);}
+.badge-sm{display:inline-block;padding:2px 7px;border-radius:10px;font-size:10px;font-family:var(--m);margin-right:4px;margin-bottom:3px;}
+@media(max-width:700px){.kpi4,.kpi5,.kpi6{grid-template-columns:1fr 1fr;}.row3,.row4{grid-template-columns:1fr 1fr;}.pp-sg{grid-template-columns:1fr 1fr;}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
 </head>
 <body>
 <div class="shell">
 <div class="topbar">
-  <span class="tlogo">seQura</span>
-  <div class="tsep"></div>
-  <span class="ttitle">CRM Segment Bot</span>
-  <div class="tstatus"><div class="sdot" id="sDot"></div><span id="sTxt">Sin datos</span></div>
+  <span class="tl">seQura</span><div class="ts"></div><span class="tt">CRM Segment Bot</span>
+  <div class="tst"><div class="dot" id="sDot"></div><span id="sTxt">Sin datos</span></div>
 </div>
 
 <div class="sidebar">
@@ -211,31 +171,39 @@
     <div class="sbl">Archivos</div>
     <div class="uz" id="dzC" onclick="document.getElementById('fC').click()" ondragover="dov(event,'dzC')" ondragleave="dlv('dzC')" ondrop="drp(event,'c')">
       <div class="ui">👤</div><div class="ul">Contactos</div>
-      <div class="us" id="lC">CSV export HubSpot</div><div class="uok" id="nC"></div>
+      <div class="us" id="lC">XLSX / CSV HubSpot</div><div class="uok" id="nC"></div>
     </div>
-    <input type="file" id="fC" accept=".csv" onchange="lf(event,'c')">
+    <input type="file" id="fC" accept=".csv,.xlsx" onchange="lf(event,'c')">
     <div class="uz" id="dzD" onclick="document.getElementById('fD').click()" ondragover="dov(event,'dzD')" ondragleave="dlv('dzD')" ondrop="drp(event,'d')">
       <div class="ui">🛍️</div><div class="ul">Deals</div>
-      <div class="us" id="lD">CSV export HubSpot</div><div class="uok" id="nD"></div>
+      <div class="us" id="lD">XLSX / CSV HubSpot</div><div class="uok" id="nD"></div>
     </div>
-    <input type="file" id="fD" accept=".csv" onchange="lf(event,'d')">
+    <input type="file" id="fD" accept=".csv,.xlsx" onchange="lf(event,'d')">
+    <div class="uz" id="dzE" onclick="document.getElementById('fE').click()" ondragover="dov(event,'dzE')" ondragleave="dlv('dzE')" ondrop="drp(event,'e')">
+      <div class="ui">📱</div><div class="ul">Eventos App</div>
+      <div class="us" id="lE">CSV Mixpanel (opcional)</div><div class="uok" id="nE"></div>
+    </div>
+    <input type="file" id="fE" accept=".csv" onchange="lf(event,'e')">
     <button class="gobtn" id="goBtn" disabled onclick="processData()">Analizar datos →</button>
   </div>
   <div class="sbs" id="ssS" style="display:none">
     <div class="sbl">Resumen</div>
     <div class="mstat"><div class="msl">Contactos</div><div class="msv" id="sbC">—</div></div>
     <div class="mstat"><div class="msl">Deals cruzados</div><div class="msv" id="sbD">—</div></div>
-    <div class="mstat" style="border-left:2px solid var(--orange);padding-left:10px;">
+    <div class="mstat" style="border-left:2px solid var(--orange);padding-left:9px;">
       <div class="msl">Sin Part Payment</div><div class="msv" id="sbNoPP" style="color:var(--orange)">—</div>
+    </div>
+    <div class="mstat" id="sbAppWrap" style="display:none">
+      <div class="msl">Usuarios app</div><div class="msv" id="sbApp">—</div>
     </div>
   </div>
   <div class="sbs" id="ssSeg" style="display:none">
     <div class="sbl">Segmentos</div>
-    <div class="spill on" onclick="fSeg('all')" id="sp-all"><div class="sdotc" style="background:var(--muted)"></div><span class="sname">Todos</span><span class="sn" id="sn-all">—</span></div>
-    <div class="spill" onclick="fSeg('ot')" id="sp-ot"><div class="sdotc" style="background:var(--seg0)"></div><span class="sname">One-timer</span><span class="sn" id="sn-ot">—</span></div>
-    <div class="spill" onclick="fSeg('occ')" id="sp-occ"><div class="sdotc" style="background:var(--seg1)"></div><span class="sname">Occasional</span><span class="sn" id="sn-occ">—</span></div>
-    <div class="spill" onclick="fSeg('rec')" id="sp-rec"><div class="sdotc" style="background:var(--seg2)"></div><span class="sname">Recurring</span><span class="sn" id="sn-rec">—</span></div>
-    <div class="spill" onclick="fSeg('vip')" id="sp-vip"><div class="sdotc" style="background:var(--seg3)"></div><span class="sname">VIP</span><span class="sn" id="sn-vip">—</span></div>
+    <div class="spill on" onclick="fSeg('all')" id="sp-all"><div class="sdc" style="background:var(--muted)"></div><span class="sn2">Todos</span><span class="snc" id="sn-all">—</span></div>
+    <div class="spill" onclick="fSeg('ot')" id="sp-ot"><div class="sdc" style="background:var(--seg0)"></div><span class="sn2">One-timer</span><span class="snc" id="sn-ot">—</span></div>
+    <div class="spill" onclick="fSeg('occ')" id="sp-occ"><div class="sdc" style="background:var(--seg1)"></div><span class="sn2">Occasional</span><span class="snc" id="sn-occ">—</span></div>
+    <div class="spill" onclick="fSeg('rec')" id="sp-rec"><div class="sdc" style="background:var(--seg2)"></div><span class="sn2">Recurring</span><span class="snc" id="sn-rec">—</span></div>
+    <div class="spill" onclick="fSeg('vip')" id="sp-vip"><div class="sdc" style="background:var(--seg3)"></div><span class="sn2">VIP</span><span class="snc" id="sn-vip">—</span></div>
   </div>
 </div>
 
@@ -243,11 +211,12 @@
   <div class="empty" id="empt">
     <div class="eico">🤖</div>
     <div class="etit">CRM Segment Bot</div>
-    <div class="esub">Sube los exports de contactos y deals de HubSpot para clasificar shoppers, analizar KPIs por segmento y detectar oportunidades de Part Payment.</div>
+    <div class="esub">Sube contactos + deals de HubSpot (XLSX/CSV) y opcionalmente el CSV de eventos de app para análisis completo de segmentos, merchants y comportamiento.</div>
     <div class="steps">
-      <div class="step"><div class="stepn">01</div><div class="stept">Sube contactos CSV</div></div>
-      <div class="step"><div class="stepn">02</div><div class="stept">Sube deals CSV</div></div>
-      <div class="step"><div class="stepn">03</div><div class="stept">Analiza segmentos e insights</div></div>
+      <div class="step"><div class="stepn">01</div><div class="stept">Contactos XLSX</div></div>
+      <div class="step"><div class="stepn">02</div><div class="stept">Deals XLSX/CSV</div></div>
+      <div class="step"><div class="stepn">03</div><div class="stept">App CSV (opcional)</div></div>
+      <div class="step"><div class="stepn">04</div><div class="stept">Analizar</div></div>
     </div>
   </div>
 
@@ -256,69 +225,78 @@
       <div class="vt on" onclick="showV('ov')">Vista general</div>
       <div class="vt" onclick="showV('seg')">Por segmento</div>
       <div class="vt pp" onclick="showV('pp')">⚡ Part Payment</div>
-      <div class="vt" onclick="showV('sr')">Buscar contacto</div>
-      <div class="vt" onclick="showV('ch')">Preguntar al bot</div>
+      <div class="vt" onclick="showV('merch')">🏪 Merchants</div>
+      <div class="vt" id="appTab" onclick="showV('app')" style="display:none">📱 App</div>
+      <div class="vt" onclick="showV('sr')">Buscar</div>
+      <div class="vt" onclick="showV('ch')">Chat</div>
     </div>
 
-    <!-- OVERVIEW -->
     <div id="vOv">
-      <div class="seg-header">
-        <div class="seg-title" id="ovTitle">Todos los segmentos</div>
-        <div class="seg-sub" id="ovSub"></div>
-      </div>
-      <div class="pen-grid" id="penGrid"></div>
-      <hr class="div">
-      <div class="kpi4" id="kpi4Top"></div>
-      <div class="row3" id="row3Charts"></div>
-      <div class="row2" id="row2Charts"></div>
-      <div class="insight" id="ovInsight" style="border-color:var(--seg0);display:none"></div>
-      <div class="aibox" style="margin-top:12px">
-        <div class="aihd"><span class="aitag">✦ AI Insights</span><span class="aist" id="aiSt">Analizando...</span></div>
+      <div class="seg-hd"><div class="seg-t" id="ovT">Todos los segmentos</div><div class="seg-s" id="ovS"></div></div>
+      <div class="pen-grid" id="penG"></div>
+      <hr class="dv">
+      <div class="kpi5" id="kpiR1"></div>
+      <div class="kpi5" id="kpiR2"></div>
+      <div class="row3" id="rowA"></div>
+      <div class="row3" id="rowB"></div>
+      <div class="aibox">
+        <div class="aihd"><span class="aitg">✦ AI Insights</span><span class="aist" id="aiSt">Analizando...</span></div>
         <div class="aibody" id="aiBody"><span class="td"></span><span class="td"></span><span class="td"></span></div>
       </div>
-      <div class="source-note" id="sourceNote"></div>
+      <div class="snote" id="srcNote"></div>
     </div>
 
-    <!-- POR SEGMENTO (tabs estilo dashboard estático) -->
     <div id="vSeg" style="display:none">
-      <div class="vtabs" style="margin-bottom:16px;">
+      <div class="vtabs" style="margin-bottom:14px" id="segTabs">
         <div class="vt on" onclick="showSeg('ot')">1. One-timer</div>
         <div class="vt" onclick="showSeg('occ')">2. Occasional</div>
         <div class="vt" onclick="showSeg('rec')">3. Recurring</div>
         <div class="vt" onclick="showSeg('vip')">4. VIP</div>
       </div>
-      <div id="segDetail"></div>
+      <div id="segDet"></div>
     </div>
 
-    <!-- PART PAYMENT -->
     <div id="vPP" style="display:none">
       <div class="pen-grid" id="ppHero"></div>
-      <hr class="div">
-      <div class="pp-seg-grid" id="ppSegGrid"></div>
-      <div class="row2">
-        <div class="card"><div class="card-t">Top sectores sin Part Payment</div><div id="ppSectors"></div></div>
-        <div class="card"><div class="card-t">Solución actual sin Part Payment</div><div id="ppCurrentSol"></div></div>
+      <hr class="dv">
+      <div class="pp-sg" id="ppSG"></div>
+      <div class="row3">
+        <div class="card"><div class="ct">Solución actual sin PP</div><div id="ppSol"></div></div>
+        <div class="card"><div class="ct">Canal de compra sin PP</div><div id="ppChan"></div></div>
+        <div class="card"><div class="ct">Sector sin PP</div><div id="ppSect"></div></div>
       </div>
-      <div class="aibox orange">
-        <div class="aihd"><span class="aitag orange">⚡ Estrategia Part Payment</span><span class="aist" id="ppAiSt">Generando...</span></div>
-        <div class="aibody" id="ppAiBody"><span class="td"></span><span class="td"></span><span class="td"></span></div>
+      <div class="aibox or">
+        <div class="aihd"><span class="aitg or">⚡ Estrategia Part Payment</span><span class="aist" id="ppSt">Generando...</span></div>
+        <div class="aibody" id="ppBody"><span class="td"></span><span class="td"></span><span class="td"></span></div>
       </div>
     </div>
 
-    <!-- SEARCH -->
+    <div id="vMerch" style="display:none">
+      <div class="vtabs" style="margin-bottom:14px" id="merchTabs">
+        <div class="vt on" onclick="showMerch('ot')">One-timer</div>
+        <div class="vt" onclick="showMerch('occ')">Occasional</div>
+        <div class="vt" onclick="showMerch('rec')">Recurring</div>
+        <div class="vt" onclick="showMerch('vip')">VIP</div>
+      </div>
+      <div id="merchDet"></div>
+    </div>
+
+    <div id="vApp" style="display:none">
+      <div id="appDet"></div>
+    </div>
+
     <div id="vSr" style="display:none">
       <div class="sbrow">
-        <input class="sbinp" type="text" id="srInp" placeholder="Buscar por seQura ID..." onkeydown="if(event.key==='Enter')doSearch()">
+        <input class="sbinp" type="text" id="srInp" placeholder="ID, nombre o email..." onkeydown="if(event.key==='Enter')doSearch()">
         <button class="sbbtn" onclick="doSearch()">Buscar</button>
       </div>
       <div id="srRes"></div>
     </div>
 
-    <!-- CHAT -->
     <div id="vCh" style="display:none">
       <div class="chatmsgs" id="chatMsgs"></div>
       <div class="cinrow">
-        <textarea class="cin" id="cinp" placeholder="Pregunta sobre segmentos, campañas, Part Payment..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+        <textarea class="cin" id="cinp" placeholder="Pregunta sobre segmentos, merchants, Part Payment, app..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
         <button class="csend" id="csend" onclick="sendMsg()">Enviar</button>
       </div>
     </div>
@@ -336,408 +314,549 @@
 </div>
 
 <script>
-const S={cRaw:null,dRaw:null,contacts:[],deals:[],cMap:{},
-  segs:{ot:[],occ:[],rec:[],vip:[]},
-  noPP:{ot:[],occ:[],rec:[],vip:[]},
-  withPP:{ot:[],occ:[],rec:[],vip:[]},
-  actSeg:'all',actSegTab:'ot',chatH:[]};
+const S={cRaw:null,dRaw:null,eRaw:null,contacts:[],deals:[],appEvents:[],cMap:{},
+  segs:{ot:[],occ:[],rec:[],vip:[]},noPP:{ot:[],occ:[],rec:[],vip:[]},
+  withPP:{ot:[],occ:[],rec:[],vip:[]},actSeg:'all',chatH:[]};
+const SC={ot:'var(--seg0)',occ:'var(--seg1)',rec:'var(--seg2)',vip:'var(--seg3)'};
+const SL={ot:'One-timer',occ:'Occasional',rec:'Recurring',vip:'VIP'};
+const SS={ot:'1 compra',occ:'2–5 compras',rec:'6–14 compras',vip:'≥15 compras'};
 
-const CC={id:'Sequra ID unique',rfm:'RFM segment',nd:'Number of Associated Deals',
-  app:'Download app',fl:'First login app',ll:'Last login app',rd:'Recent Deal Close Date',
-  birth:'Birth Date',rewards:'rewards_mode',cd:'Create Date'};
-const DC={cid:'Sequra Shopper ID unique',merch:'Merchant Name',sector:'Merchant Sector',
-  sub:'Merchant Subsector',sol:'Nombre solución de pago',stage:'Deal Stage',
-  close:'Fecha de cierre Sequra',amt:'Amount',chan:'Merchant Channel',inst:'Installments Count'};
-
-const SEG_COLOR={ot:'var(--seg0)',occ:'var(--seg1)',rec:'var(--seg2)',vip:'var(--seg3)'};
-const SEG_LABEL={ot:'One-timer',occ:'Occasional',rec:'Recurring',vip:'VIP'};
-const SEG_SUB={ot:'1 compra',occ:'2–5 compras',rec:'6–15 compras',vip:'>15 compras'};
-
-function gv(row,col){return row[col]||'';}
-function normId(v){try{return String(Math.round(parseFloat(v)));}catch{return String(v).trim();}}
-function cls(n){n=parseInt(parseFloat(n||0));if(n===1)return'ot';if(n<=5)return'occ';if(n<=15)return'rec';return'vip';}
 function slp(ms){return new Promise(r=>setTimeout(r,ms));}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function daysBetween(d1,d2){return Math.round(Math.abs(d2-d1)/(1000*60*60*24));}
-function parseDate(s){if(!s)return null;const d=new Date(s);return isNaN(d)?null:d;}
-function median(arr){if(!arr.length)return 0;const s=[...arr].sort((a,b)=>a-b);const m=Math.floor(s.length/2);return s.length%2?s[m]:Math.round((s[m-1]+s[m])/2);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function normId(v){try{const n=parseFloat(String(v));return isNaN(n)?String(v).trim():String(Math.round(n));}catch{return '';}}
+function cls(n){const v=parseInt(parseFloat(n));if(isNaN(v)||v<=1)return'ot';if(v<=5)return'occ';if(v<=14)return'rec';return'vip';}
+function parseEdad(s){try{return Math.round(parseInt(String(s).split(':')[0])/8760);}catch{return null;}}
+function edadRango(e){if(e==null)return null;if(e<18)return'<18';if(e<=29)return'18–29';if(e<=39)return'30–39';if(e<=49)return'40–49';if(e<=65)return'50–65';return'+65';}
+function median(a){if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y);const m=Math.floor(s.length/2);return s.length%2?s[m]:Math.round((s[m-1]+s[m])/2);}
+function pct(a,b){return b>0?(a/b*100).toFixed(1):0;}
+function avg(arr){return arr.length>0?(arr.reduce((a,b)=>a+b,0)/arr.length):0;}
 
-function dov(e,id){e.preventDefault();document.getElementById(id).classList.add('drag');}
-function dlv(id){document.getElementById(id).classList.remove('drag');}
-function drp(e,t){e.preventDefault();dlv(t==='c'?'dzC':'dzD');if(e.dataTransfer.files[0])lfd(e.dataTransfer.files[0],t);}
+function dov(e,id){e.preventDefault();document.getElementById(id).classList.add('loaded');}
+function dlv(id){document.getElementById(id).classList.remove('loaded');}
+function drp(e,t){e.preventDefault();if(e.dataTransfer.files[0])lfd(e.dataTransfer.files[0],t);}
 function lf(e,t){if(e.target.files[0])lfd(e.target.files[0],t);}
+
 function lfd(file,t){
-  Papa.parse(file,{header:true,skipEmptyLines:true,complete:res=>{
-    if(t==='c'){S.cRaw=res.data;document.getElementById('dzC').classList.add('loaded');document.getElementById('lC').style.display='none';const el=document.getElementById('nC');el.style.display='block';el.textContent=`✓ ${file.name} · ${res.data.length.toLocaleString()} filas`;}
-    else{S.dRaw=res.data;document.getElementById('dzD').classList.add('loaded');document.getElementById('lD').style.display='none';const el=document.getElementById('nD');el.style.display='block';el.textContent=`✓ ${file.name} · ${res.data.length.toLocaleString()} filas`;}
+  const ext=file.name.split('.').pop().toLowerCase();
+  const r=new FileReader();
+  r.onload=ev=>{
+    let data;
+    if(ext==='csv'){data=Papa.parse(ev.target.result,{header:true,skipEmptyLines:true,dynamicTyping:false}).data;}
+    else{const wb=XLSX.read(ev.target.result,{type:'array'});data=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});}
+    const ids={c:'C',d:'D',e:'E'};
+    S[t+'Raw']=data;
+    const zid={'c':'dzC','d':'dzD','e':'dzE'}[t];
+    const lid={'c':'lC','d':'lD','e':'lE'}[t];
+    const nid={'c':'nC','d':'nD','e':'nE'}[t];
+    document.getElementById(zid).classList.add('loaded');
+    document.getElementById(lid).style.display='none';
+    const el=document.getElementById(nid);el.style.display='block';
+    el.textContent=`✓ ${file.name} · ${data.length.toLocaleString()} filas`;
     if(S.cRaw&&S.dRaw)document.getElementById('goBtn').disabled=false;
-  }});
+  };
+  if(ext==='csv')r.readAsText(file);else r.readAsArrayBuffer(file);
 }
+
+function gv(row,...keys){for(const k of keys){const kl=k.toLowerCase();const found=Object.keys(row).find(rk=>rk.toLowerCase()===kl||rk.toLowerCase().includes(kl));if(found&&row[found]!==''&&row[found]!=null)return row[found];}return '';}
 
 async function processData(){
   document.getElementById('pOv').style.display='flex';await slp(50);
-  sp(10,'Parseando contactos...');await slp(80);
-  const now=new Date();
+
+  sp(8,'Parseando contactos...');await slp(60);
   S.contacts=S.cRaw.map((row,i)=>{
-    const nd=parseInt(parseFloat(gv(row,CC.nd)))||0;
-    const rdDate=parseDate(gv(row,CC.rd));
-    const cdDate=parseDate(gv(row,CC.cd));
-    return{_i:i,id:normId(gv(row,CC.id)),rfm:gv(row,CC.rfm),nd,seg:cls(nd),
-      app:gv(row,CC.app),fl:gv(row,CC.fl),ll:gv(row,CC.ll),
-      rd:gv(row,CC.rd),rdDate,birth:gv(row,CC.birth),
-      rewards:gv(row,CC.rewards),cd:gv(row,CC.cd),cdDate,
-      daysSince:rdDate?daysBetween(rdDate,now):null,
-      tenure:cdDate?daysBetween(cdDate,now):null,
-      deals:[],_r:row};
+    const nd=parseInt(parseFloat(gv(row,'Number of Associated Deals','number_of_associated_deals')||0));
+    const edad=parseEdad(gv(row,'Edad -new-','Edad'));
+    return{_i:i,
+      id:normId(gv(row,'Sequra ID unique','sequra id unique')),
+      recordId:String(gv(row,'Record ID','')),
+      firstName:gv(row,'First Name','first name'),
+      lastName:gv(row,'Last Name','last name'),
+      email:gv(row,'Email','email'),
+      nd:isNaN(nd)?0:nd,seg:cls(nd),
+      rfm:gv(row,'RFM segment'),rewards:gv(row,'rewards_mode'),
+      app:gv(row,'Download app'),appFlag:gv(row,'Shopper app flag'),
+      buyerType:gv(row,'Buyer typology'),channelReg:gv(row,'Channel registration'),
+      shopperFlag:gv(row,'Shopper Flag'),trafficSrc:gv(row,'Original Traffic Source'),
+      favMerchant:gv(row,'Favorite Merchant'),
+      recentDeal:gv(row,'Recent Deal Close Date'),
+      edad,edadR:edadRango(edad),
+      deals:[],hasPP:false,totalPaid:0,avgTicket:0,nMerchants:0,singleMerchant:false,avgDaysBetween:null
+    };
   });
-  sp(35,'Parseando deals...');await slp(80);
-  S.deals=S.dRaw.map((row,i)=>({_i:i,cid:normId(gv(row,DC.cid)),merch:gv(row,DC.merch),
-    sector:gv(row,DC.sector),sub:gv(row,DC.sub),sol:gv(row,DC.sol),stage:gv(row,DC.stage),
-    close:gv(row,DC.close),amt:parseFloat(gv(row,DC.amt))||0,
-    chan:gv(row,DC.chan),inst:gv(row,DC.inst)}));
-  sp(55,'Cruzando datos...');await slp(80);
-  S.cMap={};S.contacts.forEach(c=>{S.cMap[c.id]=c;});
+
+  sp(22,'Parseando deals...');await slp(60);
+  S.deals=S.dRaw.map((row,i)=>({_i:i,
+    cid:normId(gv(row,'Sequra Shopper ID unique','sequra shopper id unique')),
+    name:gv(row,'Deal Name','deal name'),
+    stage:gv(row,'Deal Stage','deal stage'),
+    amt:parseFloat(gv(row,'Amount','amount')||0)||0,
+    sol:gv(row,'Nombre solución de pago','nombre solucion'),
+    inst:parseFloat(gv(row,'Installments Count','installments count')||0)||0,
+    merch:gv(row,'Merchant Name','merchant name'),
+    sector:gv(row,'Merchant Sector','merchant sector'),
+    chan:gv(row,'Merchant Channel','merchant channel'),
+    closeDate:gv(row,'Fecha de cierre Sequra','Close Date','fecha cierre'),
+    rfm:gv(row,'RFM','rfm')
+  }));
+
+  sp(38,'Cruzando datos...');await slp(60);
+  S.cMap={};S.contacts.forEach(c=>{if(c.id)S.cMap[c.id]=c;});
   let matched=0;
   S.deals.forEach(d=>{if(S.cMap[d.cid]){S.cMap[d.cid].deals.push(d);matched++;}});
-  sp(70,'Clasificando...');await slp(60);
-  S.segs={ot:[],occ:[],rec:[],vip:[]};
-  S.noPP={ot:[],occ:[],rec:[],vip:[]};
-  S.withPP={ot:[],occ:[],rec:[],vip:[]};
+
+  sp(52,'Calculando KPIs...');await slp(60);
+  S.segs={ot:[],occ:[],rec:[],vip:[]};S.noPP={ot:[],occ:[],rec:[],vip:[]};S.withPP={ot:[],occ:[],rec:[],vip:[]};
+
   S.contacts.forEach(c=>{
-    if(S.segs[c.seg])S.segs[c.seg].push(c);
-    const hasPP=c.deals.some(d=>d.sol==='Part Payment');
-    c.hasPP=hasPP;
-    // calc total paid
+    c.hasPP=c.deals.some(d=>d.sol==='Part Payment');
     c.totalPaid=c.deals.reduce((a,d)=>a+d.amt,0);
-    // avg ticket
     c.avgTicket=c.deals.length>0?c.totalPaid/c.deals.length:0;
-    if(hasPP){if(S.withPP[c.seg])S.withPP[c.seg].push(c);}
+    // avg days between purchases
+    const dates=c.deals.map(d=>d.closeDate?new Date(d.closeDate):null).filter(Boolean).sort((a,b)=>a-b);
+    if(dates.length>=2){const diffs=[];for(let i=1;i<dates.length;i++)diffs.push((dates[i]-dates[i-1])/(1000*60*60*24));c.avgDaysBetween=avg(diffs);}
+    // merchants
+    const ms=new Set(c.deals.map(d=>d.merch).filter(Boolean));
+    c.nMerchants=ms.size;c.singleMerchant=ms.size===1;
+    if(S.segs[c.seg])S.segs[c.seg].push(c);
+    if(c.hasPP){if(S.withPP[c.seg])S.withPP[c.seg].push(c);}
     else{if(S.noPP[c.seg])S.noPP[c.seg].push(c);}
   });
-  sp(90,'Generando vista...');await slp(60);
+
+  sp(68,'Procesando eventos app...');await slp(60);
+  if(S.eRaw){
+    const col=Object.keys(S.eRaw[0]).find(k=>k.includes('2026')||k.includes('Apr')||k.includes('count')||k.toLowerCase().includes('total'))||Object.keys(S.eRaw[0]).slice(-1)[0];
+    S.appEvents=S.eRaw.map(row=>({
+      uid:normId(gv(row,'User ID','user id','userid')),
+      event:gv(row,'Event Name','event name'),
+      screen:gv(row,'Screen','screen'),
+      count:parseInt(gv(row,col)||0)||0
+    })).filter(r=>r.count>0);
+    document.getElementById('appTab').style.display='';
+    document.getElementById('sbAppWrap').style.display='block';
+    document.getElementById('sbApp').textContent=new Set(S.appEvents.map(r=>r.uid)).size.toLocaleString();
+  }
+
+  sp(85,'Actualizando sidebar...');await slp(50);
   const tot=S.contacts.length;
-  const totalNoPP=Object.values(S.noPP).flat().length;
+  const noPP=Object.values(S.noPP).flat().length;
   document.getElementById('sbC').textContent=tot.toLocaleString();
   document.getElementById('sbD').textContent=matched.toLocaleString();
-  document.getElementById('sbNoPP').textContent=totalNoPP.toLocaleString();
+  document.getElementById('sbNoPP').textContent=noPP.toLocaleString();
   document.getElementById('sn-all').textContent=tot.toLocaleString();
   ['ot','occ','rec','vip'].forEach(s=>document.getElementById(`sn-${s}`).textContent=(S.segs[s]?.length||0).toLocaleString());
   document.getElementById('ssS').style.display='block';
   document.getElementById('ssSeg').style.display='block';
-  sp(100,'Listo');await slp(350);
+
+  sp(100,'Listo');await slp(300);
   document.getElementById('pOv').style.display='none';
   document.getElementById('empt').style.display='none';
   document.getElementById('resWrap').style.display='block';
   document.getElementById('sDot').classList.add('on');
   document.getElementById('sTxt').textContent=`${tot.toLocaleString()} contactos · ${new Date().toLocaleDateString('es')}`;
-  renderOv('all');renderPP();showSeg('ot');aiInsights();ppAiInsights();
+
+  renderOv('all');renderPP();showSeg('ot');showMerch('ot');
+  if(S.appEvents.length)renderApp();
+  aiInsights();ppAi();
 }
 function sp(p,t){document.getElementById('pF').style.width=p+'%';document.getElementById('pS').textContent=t;}
 
-// ─── STATS HELPER ───────────────────────────────────────────
-function segStats(contacts){
-  const tot=contacts.length;
-  if(!tot)return{};
+// ─── HELPERS ──────────────────────────────────────────────────
+function barsMap(map,color,n=8,pctOf=0){
+  const arr=Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,n);
+  if(!arr.length)return`<div style="color:var(--muted);font-size:11px">Sin datos</div>`;
+  const mx=arr[0][1];
+  return arr.map(([l,v])=>`<div class="br"><span class="bl">${esc(l)}</span><div class="bt"><div class="bff" style="width:${(v/mx)*100}%;background:${color}"></div></div><span class="bv">${pctOf>0?pct(v,pctOf)+'%':v.toLocaleString()}</span></div>`).join('');
+}
+
+function buildStats(contacts){
+  const tot=contacts.length;if(!tot)return{tot:0,allDeals:[],rfmm:{},rewm:{},buyerm:{},flagm:{},chanm:{},solm:{},sectorm:{},instArr:[],daysBetArr:[]};
   const allDeals=contacts.flatMap(c=>c.deals||[]);
-  const totalPaid=contacts.reduce((a,c)=>a+c.totalPaid,0);
-  const avgTotalPaid=totalPaid/tot;
-  const avgTicket=allDeals.length>0?allDeals.reduce((a,d)=>a+d.amt,0)/allDeals.length:0;
-  const daysSinceArr=contacts.filter(c=>c.daysSince!=null).map(c=>c.daysSince);
-  const tenureArr=contacts.filter(c=>c.tenure!=null).map(c=>c.tenure);
-  const avgDaysSince=daysSinceArr.length>0?daysSinceArr.reduce((a,b)=>a+b,0)/daysSinceArr.length:0;
-  const medDaysSince=median(daysSinceArr);
-  const avgTenure=tenureArr.length>0?tenureArr.reduce((a,b)=>a+b,0)/tenureArr.length:0;
-  const medTenure=median(tenureArr);
-  const withApp=contacts.filter(c=>c.app&&c.app.toLowerCase()==='sí').length;
-  const appPct=tot>0?(withApp/tot*100).toFixed(0):0;
-  // rewards
-  const rm={};contacts.forEach(c=>{if(c.rewards)rm[c.rewards]=(rm[c.rewards]||0)+1;});
-  // rfm
-  const rfmm={};contacts.forEach(c=>{if(c.rfm)rfmm[c.rfm]=(rfmm[c.rfm]||0)+1;});
-  // sector
-  const sm={};allDeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;});
-  // merchant
-  const mm={};allDeals.forEach(d=>{if(d.merch)mm[d.merch]=(mm[d.merch]||0)+1;});
-  // solution
-  const solm={};allDeals.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
-  // PP
   const withPP=contacts.filter(c=>c.hasPP).length;
-  return{tot,allDeals,totalPaid,avgTotalPaid,avgTicket,avgDaysSince,medDaysSince,
-    avgTenure,medTenure,withApp,appPct,rm,rfmm,sm,mm,solm,withPP};
+  const withApp=contacts.filter(c=>c.app&&c.app.toString().toLowerCase()==='sí').length;
+  const singleMerch=contacts.filter(c=>c.singleMerchant&&c.deals.length>0).length;
+  const edadRm={};contacts.forEach(c=>{if(c.edadR)edadRm[c.edadR]=(edadRm[c.edadR]||0)+1;});
+  const rfmm={},rewm={},buyerm={},flagm={},chanm:{},solm={},sectorm={},merchm={};
+  const chanm2={};
+  contacts.forEach(c=>{
+    if(c.rfm)rfmm[c.rfm]=(rfmm[c.rfm]||0)+1;
+    if(c.rewards)rewm[c.rewards]=(rewm[c.rewards]||0)+1;
+    if(c.buyerType)buyerm[c.buyerType]=(buyerm[c.buyerType]||0)+1;
+    if(c.appFlag)flagm[c.appFlag]=(flagm[c.appFlag]||0)+1;
+    if(c.channelReg)chanm2[c.channelReg]=(chanm2[c.channelReg]||0)+1;
+  });
+  allDeals.forEach(d=>{
+    if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;
+    if(d.sector)sectorm[d.sector]=(sectorm[d.sector]||0)+1;
+    if(d.merch)merchm[d.merch]=(merchm[d.merch]||0)+1;
+    if(d.chan)chanm2[d.chan]=(chanm2[d.chan]||0)+1;
+  });
+  const instArr=allDeals.filter(d=>d.inst>0).map(d=>d.inst);
+  const daysBetArr=contacts.filter(c=>c.avgDaysBetween!=null).map(c=>c.avgDaysBetween);
+  const avgTicket=allDeals.length>0?avg(allDeals.map(d=>d.amt)):0;
+  const avgTotalPaid=avg(contacts.map(c=>c.totalPaid));
+  const edadArr=contacts.filter(c=>c.edad!=null).map(c=>c.edad);
+  const avgEdad=avg(edadArr);
+  return{tot,allDeals,withPP,withApp,singleMerch,edadRm,rfmm,rewm,buyerm,flagm,chanm:chanm2,solm,sectorm,merchm,instArr,daysBetArr,avgTicket,avgTotalPaid,avgEdad};
 }
 
-// ─── BARS HELPER ────────────────────────────────────────────
-function bars(arr,color,maxN=6){
-  if(!arr.length)return`<div style="color:var(--muted);font-size:12px">Sin datos</div>`;
-  const top=arr.slice(0,maxN);const mx=top[0][1];
-  return top.map(([l,n])=>`<div class="br"><span class="bl" style="width:70px">${esc(l)}</span><div class="bt"><div class="bf" style="width:${(n/mx)*100}%;background:${color}"></div></div><span class="bv">${n.toLocaleString()}</span></div>`).join('');
-}
-function barsPct(arr,tot,color,maxN=5){
-  if(!arr.length)return`<div style="color:var(--muted);font-size:12px">Sin datos</div>`;
-  const top=arr.slice(0,maxN);const mx=top[0][1];
-  return top.map(([l,n])=>`<div class="br"><span class="bl" style="width:70px">${esc(l)}</span><div class="bt"><div class="bf" style="width:${(n/mx)*100}%;background:${color}"></div></div><span class="bv">${tot>0?(n/tot*100).toFixed(0):0}%</span></div>`).join('');
-}
-
-// ─── OVERVIEW ───────────────────────────────────────────────
+// ─── OVERVIEW ─────────────────────────────────────────────────
 function renderOv(segKey){
   S.actSeg=segKey;
   const isAll=segKey==='all';
   const contacts=isAll?S.contacts:(S.segs[segKey]||[]);
   const tot=S.contacts.length;
-  const segTot=contacts.length;
-  const st=segStats(contacts);
-  const color=isAll?'var(--seg0)':SEG_COLOR[segKey];
+  const st=buildStats(contacts);
+  const color=isAll?'var(--text)':SC[segKey];
 
-  // Title
-  document.getElementById('ovTitle').textContent=isAll?'Todos los segmentos':SEG_LABEL[segKey]+' — '+SEG_SUB[segKey];
-  document.getElementById('ovSub').textContent=`${segTot.toLocaleString()} contactos · ${tot>0?(segTot/tot*100).toFixed(1):0}% del total`;
+  document.getElementById('ovT').textContent=isAll?'Todos los segmentos':`${SL[segKey]} — ${SS[segKey]}`;
+  document.getElementById('ovS').textContent=`${st.tot.toLocaleString()} contactos · ${pct(st.tot,tot)}% · ${st.allDeals.length.toLocaleString()} deals`;
 
-  // Penetration cards
-  const ppPct=segTot>0?(st.withPP/segTot*100).toFixed(1):0;
-  document.getElementById('penGrid').innerHTML=`
-    <div class="pen-card"><div class="pen-label">Share of customers</div><div class="pen-val" style="color:${color}">${tot>0?(segTot/tot*100).toFixed(1):0}%</div><div class="pen-sub">${segTot.toLocaleString()} de ${tot.toLocaleString()}</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:${tot>0?segTot/tot*100:0}%;background:${color}"></div></div></div>
-    <div class="pen-card"><div class="pen-label">Con Part Payment</div><div class="pen-val" style="color:var(--green)">${ppPct}%</div><div class="pen-sub">${st.withPP?.toLocaleString()||0} de ${segTot.toLocaleString()}</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:${ppPct}%;background:var(--green)"></div></div></div>`;
+  const ppP=pct(st.withPP,st.tot);
+  document.getElementById('penG').innerHTML=`
+    <div class="pen-card"><div class="pen-lbl">Share of customers</div><div class="pen-val" style="color:${color}">${pct(st.tot,tot)}%</div><div class="pen-sub">${st.tot.toLocaleString()} de ${tot.toLocaleString()}</div><div class="pbt"><div class="pbf" style="width:${pct(st.tot,tot)}%;background:${color}"></div></div></div>
+    <div class="pen-card"><div class="pen-lbl">Con Part Payment</div><div class="pen-val" style="color:var(--green)">${ppP}%</div><div class="pen-sub">${st.withPP.toLocaleString()} con PP · ${(st.tot-st.withPP).toLocaleString()} sin PP</div><div class="pbt"><div class="pbf" style="width:${ppP}%;background:var(--green)"></div></div></div>`;
 
-  // KPI4
-  const avgTenureD=Math.round(st.avgTenure||0);
-  const tenureLabel=avgTenureD>365?`${(avgTenureD/365).toFixed(1)}a`:`${avgTenureD}d`;
-  document.getElementById('kpi4Top').innerHTML=`
-    <div class="kpi"><div class="kpi-l">Avg ticket</div><div class="kpi-v">€${(st.avgTicket||0).toFixed(0)}</div><div class="kpi-s">${st.allDeals?.length?.toLocaleString()||0} deals</div></div>
-    <div class="kpi"><div class="kpi-l">Total paid avg</div><div class="kpi-v">€${(st.avgTotalPaid||0).toFixed(0)}</div><div class="kpi-s">por contacto</div></div>
-    <div class="kpi"><div class="kpi-l">Days since purchase</div><div class="kpi-v">${Math.round(st.avgDaysSince||0)}</div><div class="kpi-s">mediana ${st.medDaysSince||0}</div></div>
-    <div class="kpi"><div class="kpi-l">Tenure</div><div class="kpi-v">${tenureLabel}</div><div class="kpi-s">mediana ${Math.round((st.medTenure||0)/30)}m</div></div>`;
+  const avgInst=st.instArr.length>0?avg(st.instArr).toFixed(1):'—';
+  const medDays=median(st.daysBetArr);
+  document.getElementById('kpiR1').innerHTML=`
+    <div class="kpi"><div class="kl">Avg ticket</div><div class="kv">€${st.avgTicket.toFixed(0)}</div><div class="ks">${st.allDeals.length.toLocaleString()} deals</div></div>
+    <div class="kpi"><div class="kl">Total paid avg</div><div class="kv">€${st.avgTotalPaid.toFixed(0)}</div><div class="ks">por contacto</div></div>
+    <div class="kpi"><div class="kl">Avg installments</div><div class="kv">${avgInst}</div><div class="ks">cuotas por compra</div></div>
+    <div class="kpi"><div class="kl">Días entre compras</div><div class="kv">${medDays||'—'}</div><div class="ks">mediana</div></div>
+    <div class="kpi"><div class="kl">App descargada</div><div class="kv">${pct(st.withApp,st.tot)}%</div><div class="ks">${st.withApp.toLocaleString()}</div></div>`;
 
-  // Row3: sectores, merchants, solución
-  const topS=Object.entries(st.sm||{}).sort((a,b)=>b[1]-a[1]);
-  const topM=Object.entries(st.mm||{}).sort((a,b)=>b[1]-a[1]);
-  const topSol=Object.entries(st.solm||{}).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('row3Charts').innerHTML=`
-    <div class="card"><div class="card-t">Top sectores</div>${bars(topS,color)}</div>
-    <div class="card"><div class="card-t">Top merchants</div>${bars(topM,color)}</div>
-    <div class="card"><div class="card-t">Solución de pago</div>${bars(topSol,'var(--green-app)')}</div>`;
+  document.getElementById('kpiR2').innerHTML=`
+    <div class="kpi"><div class="kl">Edad media</div><div class="kv">${st.avgEdad>0?Math.round(st.avgEdad)+'a':'—'}</div><div class="ks">años</div></div>
+    <div class="kpi"><div class="kl">Qoins</div><div class="kv">${pct(st.rewm['qoins']||0,st.tot)}%</div><div class="ks">${(st.rewm['qoins']||0).toLocaleString()}</div></div>
+    <div class="kpi"><div class="kl">Bitcoins</div><div class="kv">${pct(st.rewm['bitcoins']||0,st.tot)}%</div><div class="ks">${(st.rewm['bitcoins']||0).toLocaleString()}</div></div>
+    <div class="kpi"><div class="kl">Single merchant</div><div class="kv">${pct(st.singleMerch,st.tot)}%</div><div class="ks">${st.singleMerch.toLocaleString()} contactos</div></div>
+    <div class="kpi"><div class="kl">Top sector</div><div class="kv" style="font-size:13px">${Object.entries(st.sectorm).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—'}</div><div class="ks">en deals</div></div>`;
 
-  // Row2: App + Rewards + RFM
-  const topRfm=Object.entries(st.rfmm||{}).sort((a,b)=>b[1]-a[1]);
-  const topRew=Object.entries(st.rm||{}).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('row2Charts').innerHTML=`
-    <div class="card">
-      <div class="card-t">App adoption</div>
-      <div class="sr"><span class="sr-l">App descargada</span><span class="sr-v">${st.appPct}%</span></div>
-      <div class="sr"><span class="sr-l">Contactos con app</span><span class="sr-v">${(st.withApp||0).toLocaleString()}</span></div>
-      <div style="margin-top:10px"><div class="card-t">Rewards mode</div>
-      ${barsPct(topRew,segTot,color,4)}</div>
-    </div>
-    <div class="card"><div class="card-t">RFM Segment</div>${barsPct(topRfm,segTot,'var(--seg3)',6)}</div>`;
+  // Edad rangos
+  const edadOrder=['18–29','30–39','40–49','50–65','+65'];
+  const edadBars=edadOrder.map(r=>[r,st.edadRm[r]||0]);
+  const maxEd=Math.max(...edadBars.map(x=>x[1]),1);
+  const edadHtml=edadBars.map(([l,v])=>`<div class="br"><span class="bl">${l}</span><div class="bt"><div class="bff" style="width:${(v/maxEd)*100}%;background:${color}"></div></div><span class="bv">${pct(v,st.tot)}%</span></div>`).join('');
 
-  document.getElementById('sourceNote').textContent=`Datos: ${segTot.toLocaleString()} contactos · ${(st.allDeals?.length||0).toLocaleString()} deals · Actualizado ${new Date().toLocaleDateString('es')}`;
+  document.getElementById('rowA').innerHTML=`
+    <div class="card"><div class="ct">Edad (rangos)</div>${edadHtml}</div>
+    <div class="card"><div class="ct">Top sectores</div>${barsMap(st.sectorm,color)}</div>
+    <div class="card"><div class="ct">Solución de pago</div>${barsMap(st.solm,'var(--gapp)',5)}</div>`;
+
+  document.getElementById('rowB').innerHTML=`
+    <div class="card"><div class="ct">RFM Segment</div>${barsMap(st.rfmm,color,5,st.tot)}</div>
+    <div class="card"><div class="ct">Rewards mode</div>${barsMap(st.rewm,color,3,st.tot)}<div style="margin-top:10px"><div class="ct">Shopper app flag</div>${barsMap(st.flagm,'var(--seg2)',3,st.tot)}</div></div>
+    <div class="card"><div class="ct">Merchant channel</div>${barsMap(st.chanm,'var(--seg3)',5,st.allDeals.length)}</div>`;
+
+  document.getElementById('srcNote').textContent=`${st.tot.toLocaleString()} contactos · ${st.allDeals.length.toLocaleString()} deals · ${new Date().toLocaleDateString('es')}`;
 }
 
-// ─── POR SEGMENTO (estilo dashboard estático) ──────────────
+// ─── POR SEGMENTO ─────────────────────────────────────────────
 function showSeg(k){
-  S.actSegTab=k;
-  document.querySelectorAll('#vSeg .vtabs .vt').forEach((t,i)=>{t.classList.toggle('on',['ot','occ','rec','vip'][i]===k);});
+  document.querySelectorAll('#segTabs .vt').forEach((t,i)=>t.classList.toggle('on',['ot','occ','rec','vip'][i]===k));
   const contacts=S.segs[k]||[];
   const tot=S.contacts.length;
-  const segTot=contacts.length;
-  const st=segStats(contacts);
-  const color=SEG_COLOR[k];
-  const pct=tot>0?(segTot/tot*100).toFixed(1):0;
-  const ppPct=segTot>0?(st.withPP/segTot*100).toFixed(1):0;
+  const st=buildStats(contacts);
+  const color=SC[k];
+  const ppP=pct(st.withPP,st.tot);
 
-  const topS=Object.entries(st.sm||{}).sort((a,b)=>b[1]-a[1]);
-  const topM=Object.entries(st.mm||{}).sort((a,b)=>b[1]-a[1]);
-  const topSol=Object.entries(st.solm||{}).sort((a,b)=>b[1]-a[1]);
-  const topRfm=Object.entries(st.rfmm||{}).sort((a,b)=>b[1]-a[1]);
-  const topRew=Object.entries(st.rm||{}).sort((a,b)=>b[1]-a[1]);
-  const avgTenureD=Math.round(st.avgTenure||0);
-  const tenureStr=avgTenureD>365?`${(avgTenureD/365).toFixed(1)}a`:`${avgTenureD}d`;
-  const medTenureStr=Math.round((st.medTenure||0)/365)>0?`mediana ${Math.round((st.medTenure||0)/365)}a`:`mediana ${Math.round((st.medTenure||0)/30)}m`;
+  const edadOrder=['18–29','30–39','40–49','50–65','+65'];
+  const edadBars=edadOrder.map(r=>[r,st.edadRm[r]||0]);
+  const maxEd=Math.max(...edadBars.map(x=>x[1]),1);
+  const edadHtml=edadBars.map(([l,v])=>`<div class="br"><span class="bl">${l}</span><div class="bt"><div class="bff" style="width:${(v/maxEd)*100}%;background:${color}"></div></div><span class="bv">${pct(v,st.tot)}%</span></div>`).join('');
 
-  document.getElementById('segDetail').innerHTML=`
+  const avgInst=st.instArr.length>0?avg(st.instArr).toFixed(1):'—';
+  const medDays=median(st.daysBetArr);
+  const avgDays=st.daysBetArr.length>0?Math.round(avg(st.daysBetArr)):'—';
+
+  document.getElementById('segDet').innerHTML=`
     <div class="pen-grid">
-      <div class="pen-card"><div class="pen-label">Share of customers</div><div class="pen-val" style="color:${color}">${pct}%</div><div class="pen-sub">${segTot.toLocaleString()} de ${tot.toLocaleString()}</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:${pct}%;background:${color}"></div></div></div>
-      <div class="pen-card"><div class="pen-label">Con Part Payment</div><div class="pen-val" style="color:var(--green)">${ppPct}%</div><div class="pen-sub">${(st.withPP||0).toLocaleString()} de ${segTot.toLocaleString()}</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:${ppPct}%;background:var(--green)"></div></div></div>
+      <div class="pen-card"><div class="pen-lbl">Share of customers</div><div class="pen-val" style="color:${color}">${pct(st.tot,tot)}%</div><div class="pen-sub">${st.tot.toLocaleString()} de ${tot.toLocaleString()}</div><div class="pbt"><div class="pbf" style="width:${pct(st.tot,tot)}%;background:${color}"></div></div></div>
+      <div class="pen-card"><div class="pen-lbl">Con Part Payment</div><div class="pen-val" style="color:var(--green)">${ppP}%</div><div class="pen-sub">${st.withPP.toLocaleString()} con PP · ${(st.tot-st.withPP).toLocaleString()} sin PP</div><div class="pbt"><div class="pbf" style="width:${ppP}%;background:var(--green)"></div></div></div>
     </div>
-    <hr class="div">
-    <div class="kpi4">
-      <div class="kpi"><div class="kpi-l">Avg ticket</div><div class="kpi-v">€${(st.avgTicket||0).toFixed(0)}</div><div class="kpi-s">${SEG_SUB[k]}</div></div>
-      <div class="kpi"><div class="kpi-l">Total paid avg</div><div class="kpi-v">€${(st.avgTotalPaid||0).toFixed(0)}</div><div class="kpi-s">por contacto</div></div>
-      <div class="kpi"><div class="kpi-l">Days since purchase</div><div class="kpi-v">${Math.round(st.avgDaysSince||0)}</div><div class="kpi-s">mediana ${st.medDaysSince||0}</div></div>
-      <div class="kpi"><div class="kpi-l">Tenure</div><div class="kpi-v">${tenureStr}</div><div class="kpi-s">${medTenureStr}</div></div>
-    </div>
-    <div class="row3">
-      <div class="card"><div class="card-t">Top sectores</div>${bars(topS,color)}</div>
-      <div class="card"><div class="card-t">Top merchants</div>${bars(topM,color)}</div>
-      <div class="card"><div class="card-t">Solución de pago</div>${bars(topSol,'var(--green-app)')}</div>
+    <hr class="dv">
+    <div class="kpi6">
+      <div class="kpi"><div class="kl">Avg ticket</div><div class="kv">€${st.avgTicket.toFixed(0)}</div><div class="ks">${SS[k]}</div></div>
+      <div class="kpi"><div class="kl">Total paid avg</div><div class="kv">€${st.avgTotalPaid.toFixed(0)}</div><div class="ks">por contacto</div></div>
+      <div class="kpi"><div class="kl">Avg installments</div><div class="kv">${avgInst}</div><div class="ks">cuotas/compra</div></div>
+      <div class="kpi"><div class="kl">Días entre compras</div><div class="kv">${medDays||'—'}</div><div class="ks">mediana · avg ${avgDays}</div></div>
+      <div class="kpi"><div class="kl">App descargada</div><div class="kv">${pct(st.withApp,st.tot)}%</div><div class="ks">${st.withApp.toLocaleString()}</div></div>
+      <div class="kpi"><div class="kl">Single merchant</div><div class="kv">${pct(st.singleMerch,st.tot)}%</div><div class="ks">${st.singleMerch.toLocaleString()}</div></div>
     </div>
     <div class="row3">
-      <div class="card">
-        <div class="card-t">App adoption</div>
-        <div class="sr"><span class="sr-l">Descargada</span><span class="sr-v">${st.appPct}%</span></div>
-        <div class="sr"><span class="sr-l">Nº contactos</span><span class="sr-v">${(st.withApp||0).toLocaleString()}</span></div>
-      </div>
-      <div class="card"><div class="card-t">Rewards mode</div>${barsPct(topRew,segTot,color,4)}</div>
-      <div class="card"><div class="card-t">RFM Segment</div>${barsPct(topRfm,segTot,'var(--seg3)',5)}</div>
+      <div class="card"><div class="ct">Edad (rangos)</div>${edadHtml}</div>
+      <div class="card"><div class="ct">Top sectores</div>${barsMap(st.sectorm,color)}</div>
+      <div class="card"><div class="ct">Merchant channel</div>${barsMap(st.chanm,'var(--seg3)',5,st.allDeals.length)}</div>
     </div>
-    <div class="insight" style="border-color:${color}">${segInsightText(k,st,segTot,pct)}</div>`;
+    <div class="row3">
+      <div class="card"><div class="ct">Solución de pago</div>${barsMap(st.solm,'var(--gapp)',5)}</div>
+      <div class="card"><div class="ct">RFM Segment</div>${barsMap(st.rfmm,color,5,st.tot)}</div>
+      <div class="card"><div class="ct">Rewards mode</div>${barsMap(st.rewm,color,3,st.tot)}<div style="margin-top:9px"><div class="ct">App flag</div>${barsMap(st.flagm,'var(--seg2)',3,st.tot)}</div></div>
+    </div>
+    <div class="insight" style="border-color:${color}">${segInsight(k,st)}</div>`;
 }
 
-function segInsightText(k,st,segTot,pct){
-  const topSector=Object.entries(st.sm||{}).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
-  const topSol=Object.entries(st.solm||{}).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
-  const ppPct=segTot>0?((st.withPP||0)/segTot*100).toFixed(0):0;
-  const t={
-    ot:`${pct}% de la base — ${segTot.toLocaleString()} contactos con una sola compra. Sector principal: ${topSector}. Solución más usada: ${topSol}. Solo el ${ppPct}% usa Part Payment — mayor oportunidad de conversión.`,
-    occ:`Segmento más valioso en volumen (${pct}%). Tenure medio ${Math.round((st.avgTenure||0)/30)}m. Top sector: ${topSector}. ${ppPct}% con Part Payment — alta palanca de upsell.`,
-    rec:`Clientes fieles con compra frecuente (${pct}% base). Avg tenure ${Math.round((st.avgTenure||0)/365).toFixed(1)} años. Sector dominante: ${topSector}. ${ppPct}% usa Part Payment.`,
-    vip:`Solo ${pct}% de la base pero con el mayor LTV. Ticket medio bajo y alta frecuencia. Top sector: ${topSector}. ${ppPct}% con Part Payment — potencial de retención máximo.`
+function segInsight(k,st){
+  const topSect=Object.entries(st.sectorm).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  const topMerch=Object.entries(st.merchm||{}).sort((a,b)=>b[1]-a[1])[0]?.[0]||'—';
+  const ppP=pct(st.withPP,st.tot);
+  const medD=median(st.daysBetArr);
+  const m={
+    ot:`${pct(st.tot,S.contacts.length)}% de la base con 1 compra. Sector dominante: ${topSect}. ${pct(st.singleMerch,st.tot)}% compra en un solo merchant (${topMerch}). Solo ${ppP}% usa Part Payment — mayor oportunidad de conversión.`,
+    occ:`${pct(st.tot,S.contacts.length)}% de la base. Total paid avg €${st.avgTotalPaid.toFixed(0)}. Días entre compras: ${medD||'—'}d mediana. Top sector: ${topSect}. ${ppP}% con Part Payment.`,
+    rec:`${pct(st.tot,S.contacts.length)}% de la base. Compra cada ~${medD||'?'}d. Total paid avg €${st.avgTotalPaid.toFixed(0)}. Sector: ${topSect}. ${ppP}% con Part Payment. Alta fidelidad.`,
+    vip:`${pct(st.tot,S.contacts.length)}% de la base con ≥15 compras. Máximo LTV: €${st.avgTotalPaid.toFixed(0)} avg. Compra cada ~${medD||'?'}d. Top merchant: ${topMerch}. ${ppP}% con Part Payment.`
   };
-  return t[k]||'';
+  return m[k]||'';
 }
 
-// ─── PART PAYMENT ───────────────────────────────────────────
+// ─── PART PAYMENT ─────────────────────────────────────────────
 function renderPP(){
   const tot=S.contacts.length;
-  const totalNoPP=Object.values(S.noPP).flat().length;
-  const totalWithPP=Object.values(S.withPP).flat().length;
+  const noPPall=Object.values(S.noPP).flat();
+  const wPPall=Object.values(S.withPP).flat();
+  const noPP=noPPall.length,wPP=wPPall.length;
   const ppDeals=S.deals.filter(d=>d.sol==='Part Payment');
-  const nonPPDeals=S.deals.filter(d=>d.sol&&d.sol!=='Part Payment');
-  const avgPP=ppDeals.length>0?(ppDeals.reduce((a,d)=>a+d.amt,0)/ppDeals.length).toFixed(0):0;
-  const avgNPP=nonPPDeals.length>0?(nonPPDeals.reduce((a,d)=>a+d.amt,0)/nonPPDeals.length).toFixed(0):0;
-  const ppPct=tot>0?(totalWithPP/tot*100).toFixed(1):0;
-  const noPpPct=tot>0?(totalNoPP/tot*100).toFixed(1):0;
+  const nPPdeals=S.deals.filter(d=>d.sol&&d.sol!=='Part Payment');
+  const avgPP=ppDeals.length?avg(ppDeals.map(d=>d.amt)).toFixed(0):0;
+  const avgNPP=nPPdeals.length?avg(nPPdeals.map(d=>d.amt)).toFixed(0):0;
 
   document.getElementById('ppHero').innerHTML=`
-    <div class="pen-card"><div class="pen-label">Sin Part Payment</div><div class="pen-val" style="color:var(--orange)">${noPpPct}%</div><div class="pen-sub">${totalNoPP.toLocaleString()} contactos</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:${noPpPct}%;background:var(--orange)"></div></div></div>
-    <div class="pen-card"><div class="pen-label">Con Part Payment</div><div class="pen-val" style="color:var(--green)">${ppPct}%</div><div class="pen-sub">${totalWithPP.toLocaleString()} contactos</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:${ppPct}%;background:var(--green)"></div></div></div>
-    <div class="pen-card"><div class="pen-label">Ticket medio Part Payment</div><div class="pen-val">€${avgPP}</div><div class="pen-sub">${ppDeals.length.toLocaleString()} deals</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:60%;background:var(--seg2)"></div></div></div>
-    <div class="pen-card"><div class="pen-label">Ticket medio otros</div><div class="pen-val">€${avgNPP}</div><div class="pen-sub">${nonPPDeals.length.toLocaleString()} deals</div><div class="pen-bar-track"><div class="pen-bar-fill" style="width:40%;background:var(--border2)"></div></div></div>`;
+    <div class="pen-card"><div class="pen-lbl">Sin Part Payment</div><div class="pen-val" style="color:var(--orange)">${pct(noPP,tot)}%</div><div class="pen-sub">${noPP.toLocaleString()} contactos</div><div class="pbt"><div class="pbf" style="width:${pct(noPP,tot)}%;background:var(--orange)"></div></div></div>
+    <div class="pen-card"><div class="pen-lbl">Con Part Payment</div><div class="pen-val" style="color:var(--green)">${pct(wPP,tot)}%</div><div class="pen-sub">${wPP.toLocaleString()} contactos</div><div class="pbt"><div class="pbf" style="width:${pct(wPP,tot)}%;background:var(--green)"></div></div></div>
+    <div class="pen-card"><div class="pen-lbl">Ticket medio PP</div><div class="pen-val">€${avgPP}</div><div class="pen-sub">${ppDeals.length.toLocaleString()} deals PP</div><div class="pbt"><div class="pbf" style="width:60%;background:var(--seg2)"></div></div></div>
+    <div class="pen-card"><div class="pen-lbl">Ticket medio no-PP</div><div class="pen-val">€${avgNPP}</div><div class="pen-sub">${nPPdeals.length.toLocaleString()} deals no-PP</div><div class="pbt"><div class="pbf" style="width:40%;background:var(--border2)"></div></div></div>`;
 
-  const segInsights={ot:'Mayor volumen. Primera compra sin PP — los más fáciles de convertir.',occ:'Ya repiten. El argumento es liquidez: "fracciona sin inmovilizar dinero".',rec:'Alta frecuencia sin PP — alto LTV potencial si se convierten.',vip:'Pocos pero alto valor. Merecen outreach personalizado.'};
-  document.getElementById('ppSegGrid').innerHTML=['ot','occ','rec','vip'].map(k=>{
-    const noPP=S.noPP[k]?.length||0,total=S.segs[k]?.length||0;
-    const pct=total>0?((noPP/total)*100).toFixed(0):0;
-    return`<div class="pp-seg ${k}"><div class="pp-seg-l">${SEG_LABEL[k]}</div><div class="pp-seg-n">${noPP.toLocaleString()}</div><div class="pp-seg-s">${pct}% del segmento sin PP</div><div class="pp-mbar"><div class="pp-mfill" style="width:${pct}%"></div></div><div class="pp-seg-i">${segInsights[k]}</div></div>`;
+  const hints={ot:'94% compra en 1 solo merchant — oportunidad directa: "fracciona en tu tienda habitual".',occ:'Ya repiten. Argumento: no inmovilices liquidez en cada compra.',rec:'Alta frecuencia sin PP — conversión = ingreso recurrente alto.',vip:'Pocos pero alto LTV. Outreach personalizado.'};
+  document.getElementById('ppSG').innerHTML=['ot','occ','rec','vip'].map(k=>{
+    const n=S.noPP[k]?.length||0,t=S.segs[k]?.length||0;
+    const p=pct(n,t);
+    return`<div class="pp-s ${k}"><div class="ppl">${SL[k]}</div><div class="ppn">${n.toLocaleString()}</div><div class="pps">${p}% del segmento sin PP</div><div class="ppmb"><div class="ppmf" style="width:${p}%"></div></div><div class="ppi">${hints[k]}</div></div>`;
   }).join('');
 
-  const noPPids=new Set(Object.values(S.noPP).flat().map(c=>c.id));
-  const noPPdeals=S.deals.filter(d=>noPPids.has(d.cid));
-  const sm={},solm={};
-  noPPdeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
-  const ts=Object.entries(sm).sort((a,b)=>b[1]-a[1]);
-  const tsol=Object.entries(solm).sort((a,b)=>b[1]-a[1]);
-  document.getElementById('ppSectors').innerHTML=bars(ts,'var(--orange)');
-  document.getElementById('ppCurrentSol').innerHTML=bars(tsol,'var(--seg2)');
+  const noPPids=new Set(noPPall.map(c=>c.id));
+  const noPPdeals2=S.deals.filter(d=>noPPids.has(d.cid));
+  const solm={},chanm={},sectm={};
+  noPPdeals2.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;if(d.chan)chanm[d.chan]=(chanm[d.chan]||0)+1;if(d.sector)sectm[d.sector]=(sectm[d.sector]||0)+1;});
+  document.getElementById('ppSol').innerHTML=barsMap(solm,'var(--seg2)',5);
+  document.getElementById('ppChan').innerHTML=barsMap(chanm,'var(--orange)',5,noPPdeals2.length);
+  document.getElementById('ppSect').innerHTML=barsMap(sectm,'var(--seg3)',5);
 }
 
-// ─── AI INSIGHTS ────────────────────────────────────────────
+// ─── MERCHANTS ────────────────────────────────────────────────
+function showMerch(k){
+  document.querySelectorAll('#merchTabs .vt').forEach((t,i)=>t.classList.toggle('on',['ot','occ','rec','vip'][i]===k));
+  const contacts=S.segs[k]||[];
+  const deals=contacts.flatMap(c=>c.deals||[]);
+  const color=SC[k];
+
+  // Top 10 merchants
+  const mm={};deals.forEach(d=>{if(d.merch)mm[d.merch]=(mm[d.merch]||0)+1;});
+  const top10=Object.entries(mm).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxM=top10[0]?.[1]||1;
+
+  // Single merchant contacts
+  const single=contacts.filter(c=>c.singleMerchant&&c.deals.length>0);
+  const singleNoPP=single.filter(c=>!c.hasPP);
+
+  // Merchant channel
+  const chanm={};deals.forEach(d=>{if(d.chan)chanm[d.chan]=(chanm[d.chan]||0)+1;});
+
+  // Single merchant breakdown
+  const singleMM={};single.forEach(c=>{const m=c.deals[0]?.merch;if(m)singleMM[m]=(singleMM[m]||0)+1;});
+  const topSingle=Object.entries(singleMM).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const maxSM=topSingle[0]?.[1]||1;
+
+  document.getElementById('merchDet').innerHTML=`
+    <div class="row4">
+      <div class="kpi" style="grid-column:1"><div class="kl">Total deals</div><div class="kv">${deals.length.toLocaleString()}</div><div class="ks">${SL[k]}</div></div>
+      <div class="kpi"><div class="kl">Merchants únicos</div><div class="kv">${new Set(deals.map(d=>d.merch).filter(Boolean)).size}</div><div class="ks">en este segmento</div></div>
+      <div class="kpi"><div class="kl">Single merchant</div><div class="kv">${pct(single.length,contacts.length)}%</div><div class="ks">${single.length.toLocaleString()} contactos</div></div>
+      <div class="kpi"><div class="kl">Single merch sin PP</div><div class="kv" style="color:var(--orange)">${singleNoPP.length.toLocaleString()}</div><div class="ks">oportunidad directa</div></div>
+    </div>
+    <div class="row2">
+      <div class="card">
+        <div class="ct">Top 10 merchants (por nº deals)</div>
+        ${top10.map(([l,v])=>`<div class="br"><span class="bl">${esc(l)}</span><div class="bt"><div class="bff" style="width:${(v/maxM)*100}%;background:${color}"></div></div><span class="bv">${v.toLocaleString()}</span></div>`).join('')}
+      </div>
+      <div class="card">
+        <div class="ct">Contactos con 1 solo merchant</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${single.length.toLocaleString()} contactos (${pct(single.length,contacts.length)}%) compran siempre en el mismo sitio</div>
+        ${topSingle.map(([l,v])=>`<div class="br"><span class="bl">${esc(l)}</span><div class="bt"><div class="bff" style="width:${(v/maxSM)*100}%;background:var(--orange)"></div></div><span class="bv">${v.toLocaleString()}</span></div>`).join('')}
+        <div style="margin-top:9px;padding:9px;background:var(--opale);border-radius:6px;font-size:11px;color:var(--muted2)">
+          <strong style="color:var(--orange)">⚡ ${singleNoPP.length.toLocaleString()} contactos</strong> compran en 1 merchant y no usan Part Payment → candidatos perfectos para campaña "fracciona gratis en tu tienda".
+        </div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="card"><div class="ct">Merchant channel</div>${barsMap(chanm,'var(--seg3)',6,deals.length)}</div>
+      <div class="card"><div class="ct">Sectores</div>${barsMap(Object.fromEntries(Object.entries((() => {const s={};deals.forEach(d=>{if(d.sector)s[d.sector]=(s[d.sector]||0)+1;});return s;})()).sort((a,b)=>b[1]-a[1]).slice(0,8)),color,8)}</div>
+    </div>`;
+}
+
+// ─── APP EVENTS ───────────────────────────────────────────────
+function renderApp(){
+  const col='count';
+  const evMap={},scrMap={};
+  S.appEvents.forEach(r=>{
+    evMap[r.event]=(evMap[r.event]||0)+r.count;
+    if(r.screen&&r.screen!=='undefined')scrMap[r.screen]=(scrMap[r.screen]||0)+r.count;
+  });
+
+  // Users por tipo de evento
+  const usersByEvent={};
+  S.appEvents.forEach(r=>{if(!usersByEvent[r.event])usersByEvent[r.event]=new Set();usersByEvent[r.event].add(r.uid);});
+
+  const totalUsers=new Set(S.appEvents.map(r=>r.uid)).size;
+  const openedMerch=(usersByEvent['Merchant Website Opened']||new Set()).size;
+  const searched=(usersByEvent['Search shopping merchant event']||new Set()).size;
+  const purchScreenUsers=new Set(S.appEvents.filter(r=>['PurchaseDetail','PurchaseHistory','PurchaseCart'].includes(r.screen)).map(r=>r.uid)).size;
+  const onlySearched=new Set([...(usersByEvent['Search shopping merchant event']||[])].filter(u=>!(usersByEvent['Merchant Website Opened']||new Set()).has(u))).size;
+
+  // Cruce con contactos
+  const cIds=new Set(S.contacts.map(c=>c.id));
+  const appIds=new Set(S.appEvents.map(r=>r.uid));
+  const matched=new Set([...appIds].filter(id=>cIds.has(id)));
+  const matchedContacts=S.contacts.filter(c=>matched.has(c.id));
+  const segApp={ot:0,occ:0,rec:0,vip:0};
+  matchedContacts.forEach(c=>{if(segApp[c.seg]!==undefined)segApp[c.seg]++;});
+
+  document.getElementById('appDet').innerHTML=`
+    <div class="seg-hd"><div class="seg-t">Comportamiento en App</div><div class="seg-s">Datos Apr 7–14 2026 · ${totalUsers.toLocaleString()} usuarios activos</div></div>
+    <div class="kpi5" style="margin-bottom:13px">
+      <div class="kpi"><div class="kl">Usuarios activos</div><div class="kv">${totalUsers.toLocaleString()}</div><div class="ks">en el período</div></div>
+      <div class="kpi"><div class="kl">Abrieron merchant web</div><div class="kv">${openedMerch.toLocaleString()}</div><div class="ks">${pct(openedMerch,totalUsers)}% del total</div></div>
+      <div class="kpi"><div class="kl">Solo buscaron</div><div class="kv" style="color:var(--orange)">${onlySearched.toLocaleString()}</div><div class="ks">sin abrir merchant</div></div>
+      <div class="kpi"><div class="kl">En pantallas compra</div><div class="kv">${purchScreenUsers.toLocaleString()}</div><div class="ks">PurchaseDetail/History</div></div>
+      <div class="kpi"><div class="kl">Cruzados con CRM</div><div class="kv">${matched.size.toLocaleString()}</div><div class="ks">de ${totalUsers.toLocaleString()} usuarios</div></div>
+    </div>
+    <div class="row2">
+      <div class="card"><div class="ct">Top eventos</div>${barsMap(evMap,'var(--seg2)',10)}</div>
+      <div class="card"><div class="ct">Top pantallas</div>${barsMap(scrMap,'var(--green)',10)}
+        ${matched.size>0?`<div style="margin-top:10px"><div class="ct">Segmento usuarios cruzados (${matched.size})</div>
+        ${['ot','occ','rec','vip'].map(k=>`<div class="br"><span class="bl">${SL[k]}</span><div class="bt"><div class="bff" style="width:${matched.size>0?(segApp[k]/matched.size)*100:0}%;background:${SC[k]}"></div></div><span class="bv">${segApp[k]}</span></div>`).join('')}
+        </div>`:''}
+      </div>
+    </div>
+    <div class="aibox bl2">
+      <div class="aihd"><span class="aitg bl2">📱 Insights App</span><span class="aist" id="appAiSt">Generando...</span></div>
+      <div class="aibody" id="appAiBody"><span class="td"></span><span class="td"></span><span class="td"></span></div>
+    </div>`;
+
+  // AI app insights
+  const prompt=`Analista CRM seQura. Datos comportamiento app (Apr 7-14, 2026):
+- Usuarios activos: ${totalUsers.toLocaleString()}
+- Abrieron merchant website: ${openedMerch} (${pct(openedMerch,totalUsers)}%)
+- Solo buscaron sin abrir: ${onlySearched} (abandonos en búsqueda)
+- En pantallas de compra (PurchaseDetail/History): ${purchScreenUsers}
+- Top eventos: ${Object.entries(evMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}:${v}`).join(', ')}
+- Top pantallas: ${Object.entries(scrMap).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}:${v}`).join(', ')}
+Genera 3 insights accionables sobre comportamiento en app y 2 recomendaciones para mejorar conversión. Español. HTML con <strong> y •.`;
+
+  fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})})
+  .then(r=>r.json()).then(d=>{document.getElementById('appAiSt').textContent='Generado';document.getElementById('appAiBody').innerHTML=d.content?.[0]?.text||'Sin conexión.';})
+  .catch(()=>{document.getElementById('appAiSt').textContent='Sin conexión';document.getElementById('appAiBody').innerHTML=`<strong>Insights app:</strong><br><br>• <strong>${onlySearched.toLocaleString()} usuarios</strong> buscaron merchants pero no los abrieron — tasa de abandono en búsqueda a investigar.<br>• Solo <strong>${pct(openedMerch,totalUsers)}%</strong> llegaron a abrir un merchant website desde la búsqueda.<br>• <strong>${purchScreenUsers.toLocaleString()} usuarios</strong> llegaron a pantallas de compra — funnel desde búsqueda a compra visible.`;});
+}
+
+// ─── AI INSIGHTS ──────────────────────────────────────────────
 async function aiInsights(){
   const tot=S.contacts.length;
-  const totalNoPP=Object.values(S.noPP).flat().length;
-  const sm={},solm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
-  const tS=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,n])=>`${s}(${n})`).join(', ');
-  const tSol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
-  const wA=S.contacts.filter(c=>c.app&&c.app.toLowerCase()==='sí').length;
-  const prompt=`Eres analista senior CRM para seQura (BNPL, España). Part Payment es el producto clave de ingresos.
-Datos reales: Total ${tot.toLocaleString()} contactos. One-timer:${S.segs.ot.length.toLocaleString()}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), Occasional:${S.segs.occ.length.toLocaleString()}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), Recurring:${S.segs.rec.length.toLocaleString()}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP:${S.segs.vip.length.toLocaleString()}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). App:${((wA/tot)*100).toFixed(1)}%. Sin PP:${totalNoPP.toLocaleString()}(${((totalNoPP/tot)*100).toFixed(1)}%). Sectores:${tS}. Soluciones:${tSol}.
-Genera 3 insights clave + 3 recomendaciones de campaña. Español. HTML con <strong> y •.`;
+  const noPP=Object.values(S.noPP).flat().length;
+  const solm={};S.deals.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const sectm={};S.deals.forEach(d=>{if(d.sector)sectm[d.sector]=(sectm[d.sector]||0)+1;});
+  const wApp=S.contacts.filter(c=>c.app&&c.app.toString().toLowerCase()==='sí').length;
+  const singleM=S.contacts.filter(c=>c.singleMerchant&&c.deals.length>0).length;
+  const singleNoPP=S.contacts.filter(c=>c.singleMerchant&&!c.hasPP&&c.deals.length>0).length;
+
+  const prompt=`Analista senior CRM seQura (BNPL, España). Part Payment = ingresos directos.
+Base: ${tot.toLocaleString()} contactos. OT=${S.segs.ot.length}(${pct(S.segs.ot.length,tot)}%), OCC=${S.segs.occ.length}(${pct(S.segs.occ.length,tot)}%), REC=${S.segs.rec.length}(${pct(S.segs.rec.length,tot)}%), VIP=${S.segs.vip.length}(${pct(S.segs.vip.length,tot)}%).
+Sin PP: ${noPP.toLocaleString()} (${pct(noPP,tot)}%). App: ${pct(wApp,tot)}%. Single merchant: ${pct(singleM,tot)}% (${singleNoPP.toLocaleString()} sin PP = oportunidad directa).
+Sectores top: ${Object.entries(sectm).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k}:${v}`).join(', ')}. Soluciones: ${Object.entries(solm).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`).join(', ')}.
+Genera 3 insights clave + 3 recomendaciones campaña. Español. HTML con <strong> y •.`;
+
   document.getElementById('aiSt').textContent='Generando...';
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:prompt}]})});
-    const d=await r.json();
-    document.getElementById('aiSt').textContent='Generado por Claude';
-    document.getElementById('aiBody').innerHTML=d.content?.[0]?.text||fbAI();
-  }catch{document.getElementById('aiSt').textContent='Sin conexión';document.getElementById('aiBody').innerHTML=fbAI();}
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,messages:[{role:'user',content:prompt}]})});const d=await r.json();document.getElementById('aiSt').textContent='Generado';document.getElementById('aiBody').innerHTML=d.content?.[0]?.text||fbAI();}
+  catch{document.getElementById('aiSt').textContent='Sin conexión';document.getElementById('aiBody').innerHTML=fbAI();}
 }
 
 function fbAI(){
-  const tot=S.contacts.length;
-  const totalNoPP=Object.values(S.noPP).flat().length;
-  return`<strong>Insights:</strong><br><br>• <strong>One-timer ${((S.segs.ot.length/tot)*100).toFixed(1)}%</strong> de la base — mayor oportunidad de reactivación y conversión a Part Payment.<br>• <strong>${totalNoPP.toLocaleString()} contactos sin Part Payment</strong> (${((totalNoPP/tot)*100).toFixed(1)}%) — oportunidad directa de ingresos.<br>• Los <strong>VIP</strong> tienen el mayor LTV — prioridad máxima de retención.<br><br><strong>Recomendaciones:</strong><br><br>• One-timers: email de reactivación personalizado por sector con incentivo Part Payment.<br>• Occasional: secuencia nurturing mostrando beneficio del aplazamiento.<br>• Recurring sin PP: descuento primera cuota como activador.`;
-}
+  const tot=S.contacts.length;const noPP=Object.values(S.noPP).flat().length;
+  const sNoPP=S.contacts.filter(c=>c.singleMerchant&&!c.hasPP&&c.deals.length>0).length;
+  return`<strong>Insights:</strong><br><br>• <strong>One-timer ${pct(S.segs.ot.length,tot)}%</strong> — ${S.segs.ot.length.toLocaleString()} contactos con 1 compra. Mayor oportunidad de reactivación.<br>• <strong>${noPP.toLocaleString()} sin Part Payment</strong> (${pct(noPP,tot)}%) — conversión directa = ingresos para seQura.<br>• <strong>${sNoPP.toLocaleString()} contactos</strong> compran en 1 solo merchant sin PP → campaña "fracciona en ${Object.entries((() => {const m={};S.contacts.filter(c=>c.singleMerchant&&!c.hasPP).forEach(c=>{const mg=c.deals[0]?.merch;if(mg)m[mg]=(m[mg]||0)+1;});return m;})()).sort((a,b)=>b[1]-a[1])[0]?.[0]||'tu tienda habitual'}". <br><br><strong>Recomendaciones:</strong><br><br>• One-timers: email reactivación personalizado por sector con incentivo Part Payment.<br>• Single merchant sin PP: "fracciona gratis en ${Object.entries((() => {const m={};S.contacts.filter(c=>c.singleMerchant&&!c.hasPP).forEach(c=>{const mg=c.deals[0]?.merch;if(mg)m[mg]=(m[mg]||0)+1;});return m;})()).sort((a,b)=>b[1]-a[1])[0]?.[0]||'tu tienda'}" — audiencia muy caliente.<br>• VIP sin PP: outreach personalizado — son fieles pero aún no fraccionan.`;}
 
-async function ppAiInsights(){
-  const tot=S.contacts.length;
-  const totalNoPP=Object.values(S.noPP).flat().length;
+async function ppAi(){
+  const tot=S.contacts.length;const noPP=Object.values(S.noPP).flat().length;
   const noPPids=new Set(Object.values(S.noPP).flat().map(c=>c.id));
   const noPPdeals=S.deals.filter(d=>noPPids.has(d.cid));
-  const sm={},solm={};noPPdeals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
-  const topS=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([s,n])=>`${s}(${n})`).join(', ');
-  const topSol=Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}(${n})`).join(', ');
-  const prompt=`Eres estratega CRM para seQura (BNPL, España). Part Payment genera fees directos.
-SIN Part Payment: ${totalNoPP.toLocaleString()} (${((totalNoPP/tot)*100).toFixed(1)}%). OT:${S.noPP.ot.length}, OCC:${S.noPP.occ.length}, REC:${S.noPP.rec.length}, VIP:${S.noPP.vip.length}. Solución actual:${topSol}. Sectores:${topS}.
-Genera: 1) 3 audiencias prioritarias con criterios exactos 2) Ángulo de mensaje para cada una 3) Secuencia de envíos. HTML con <strong>, <br><br> y •.`;
-  document.getElementById('ppAiSt').textContent='Generando...';
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-    const d=await r.json();
-    document.getElementById('ppAiSt').textContent='Generado por Claude';
-    document.getElementById('ppAiBody').innerHTML=d.content?.[0]?.text||fbPP();
-  }catch{document.getElementById('ppAiSt').textContent='Sin conexión';document.getElementById('ppAiBody').innerHTML=fbPP();}
-}
+  const solm={},sectm={};noPPdeals.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;if(d.sector)sectm[d.sector]=(sectm[d.sector]||0)+1;});
+  const singleNoPP=S.contacts.filter(c=>c.singleMerchant&&!c.hasPP&&c.deals.length>0).length;
 
-function fbPP(){
-  return`<strong>Audiencias prioritarias:</strong><br><br>• <strong>One-timers con Invoice (${S.noPP.ot.length.toLocaleString()}):</strong> Compraron una vez pagando de golpe. Email: "¿Sabías que puedes fraccionar tu próxima compra?"<br>• <strong>Occasional sin PP (${S.noPP.occ.length.toLocaleString()}):</strong> Repiten pero no fraccionan. Argumento: "compras regularmente — no inmovilices tu dinero".<br>• <strong>Recurring sin PP (${S.noPP.rec.length.toLocaleString()}):</strong> Los de mayor LTV potencial. Descuento en primera cuota como detonante.<br><br><strong>Secuencia:</strong><br><br>• Email 1 — Awareness (día 0) + CTA a merchant del sector habitual.<br>• Email 2 — Beneficio (día 7): calculadora de cuotas con su ticket medio.<br>• Email 3 — Urgencia (día 14): oferta limitada con Part Payment activado.`;
+  const prompt=`Estratega CRM seQura. Part Payment = ingresos. Sin PP: ${noPP.toLocaleString()} (${pct(noPP,tot)}%). OT:${S.noPP.ot.length}, OCC:${S.noPP.occ.length}, REC:${S.noPP.rec.length}, VIP:${S.noPP.vip.length}. Single merchant sin PP: ${singleNoPP.toLocaleString()}. Sol actual: ${Object.entries(solm).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`).join(', ')}. Sectores: ${Object.entries(sectm).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([k,v])=>`${k}:${v}`).join(', ')}.
+Genera: 1) 3 audiencias prioritarias con criterios exactos 2) Ángulo de mensaje 3) Secuencia de 3 emails. HTML con <strong>, <br><br> y •.`;
+  document.getElementById('ppSt').textContent='Generando...';
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:900,messages:[{role:'user',content:prompt}]})});const d=await r.json();document.getElementById('ppSt').textContent='Generado';document.getElementById('ppBody').innerHTML=d.content?.[0]?.text||fbPP();}
+  catch{document.getElementById('ppSt').textContent='Sin conexión';document.getElementById('ppBody').innerHTML=fbPP();}
 }
+function fbPP(){const sNoPP=S.contacts.filter(c=>c.singleMerchant&&!c.hasPP&&c.deals.length>0).length;return`<strong>Audiencias:</strong><br><br>• <strong>Single merchant sin PP (${sNoPP.toLocaleString()}):</strong> Compran siempre en el mismo sitio con Invoice/Full Payment. Email ultra-personalizado: "Fracciona gratis en [merchant]".<br>• <strong>One-timers sin PP (${S.noPP.ot.length.toLocaleString()}):</strong> Compraron una vez sin fraccionar. Awareness: "¿Sabías que puedes pagar en cuotas?".<br>• <strong>Occasional sin PP (${S.noPP.occ.length.toLocaleString()}):</strong> Repiten sin fraccionar. Argumento liquidez.<br><br><strong>Secuencia:</strong><br><br>• Email 1 (d0) — Descubrimiento + CTA merchant habitual.<br>• Email 2 (d7) — Beneficio con calculadora de cuotas.<br>• Email 3 (d14) — Urgencia + oferta limitada.`;}
 
-// ─── SEARCH ─────────────────────────────────────────────────
+// ─── SEARCH ───────────────────────────────────────────────────
 function doSearch(){
   const q=document.getElementById('srInp').value.trim().toLowerCase();
   if(!q)return;
-  const res=S.contacts.filter(c=>c.id.toLowerCase().includes(q)).slice(0,20);
+  const res=S.contacts.filter(c=>c.id.includes(q)||(c.firstName+' '+c.lastName).toLowerCase().includes(q)||c.email.toLowerCase().includes(q)).slice(0,15);
   if(!res.length){document.getElementById('srRes').innerHTML=`<div class="nores">Sin resultados para "${esc(q)}"</div>`;return;}
   const sbg={ot:'rgba(136,135,128,.08)',occ:'rgba(5,194,165,.08)',rec:'rgba(55,138,221,.08)',vip:'rgba(127,119,221,.08)'};
   document.getElementById('srRes').innerHTML=res.map(c=>{
-    const deals=c.deals||[];
-    const ppTag=c.hasPP?`<span class="tag pp">✓ Part Payment</span>`:`<span class="tag npp">Sin Part Payment</span>`;
-    return`<div class="ccard"><div class="cchd"><div style="flex:1"><div class="ccname">ID ${esc(c.id)} ${ppTag}</div><div class="ccid">RFM: ${esc(c.rfm)||'—'} · Alta: ${esc(c.cd||'').split(' ')[0]}</div></div><div class="ccbadge" style="background:${sbg[c.seg]};color:${SEG_COLOR[c.seg]};border:0.5px solid ${SEG_COLOR[c.seg]}33">${SEG_LABEL[c.seg]}</div></div>
-    <div class="cckpis"><div class="ck"><div class="ckl">Compras</div><div class="ckv" style="color:${SEG_COLOR[c.seg]}">${c.nd}</div></div><div class="ck"><div class="ckl">Deals cruzados</div><div class="ckv">${deals.length}</div></div><div class="ck"><div class="ckl">Total paid</div><div class="ckv">€${c.totalPaid.toLocaleString('es',{maximumFractionDigits:0})}</div></div><div class="ck"><div class="ckl">Avg ticket</div><div class="ckv">€${c.avgTicket.toFixed(0)}</div></div><div class="ck"><div class="ckl">Days since</div><div class="ckv">${c.daysSince!=null?c.daysSince:'—'}</div></div></div>
-    <div class="cckpis"><div class="ck"><div class="ckl">Tenure</div><div class="ckv">${c.tenure!=null?c.tenure+'d':'—'}</div></div><div class="ck"><div class="ckl">App</div><div class="ckv" style="font-size:12px">${c.app||'—'}</div></div><div class="ck"><div class="ckl">Rewards</div><div class="ckv" style="font-size:12px">${c.rewards||'—'}</div></div><div class="ck"><div class="ckl">RFM</div><div class="ckv" style="font-size:12px">${c.rfm||'—'}</div></div><div class="ck"><div class="ckl">Último deal</div><div class="ckv" style="font-size:11px">${(c.rd||'—').split(' ')[0]}</div></div></div>
-    ${deals.length?`<div class="card-t" style="margin-bottom:7px">Deals (${deals.length})</div><div style="overflow-x:auto"><table class="dtbl"><tr><th>Merchant</th><th>Sector</th><th>Solución</th><th>Importe</th><th>Cierre</th></tr>${deals.slice(0,8).map(d=>`<tr><td>${esc(d.merch)||'—'}</td><td>${esc(d.sector)||'—'}</td><td><span class="tag ${d.sol==='Part Payment'?'pp':''}">${esc(d.sol)||'—'}</span></td><td>€${d.amt.toFixed(0)}</td><td>${(d.close||'—').split(' ')[0]}</td></tr>`).join('')}${deals.length>8?`<tr><td colspan="5" style="color:var(--muted);font-size:10px;font-family:var(--mono)">+${deals.length-8} más</td></tr>`:''}</table></div>`:''}
+    const ppTag=c.hasPP?`<span class="tag pp">✓ PP</span>`:`<span class="tag npp">Sin PP</span>`;
+    const smTag=c.singleMerchant&&c.deals.length?`<span class="tag" style="background:var(--opale);color:var(--orange)">1 merchant</span>`:'';
+    const nm=(c.firstName+' '+c.lastName).trim()||`ID ${c.id}`;
+    return`<div class="ccard"><div class="cchd"><div style="flex:1"><div class="ccnm">${esc(nm)} ${ppTag} ${smTag}</div><div class="ccid">${esc(c.email)||'—'} · ID ${esc(c.id)}</div></div><div class="ccbdg" style="background:${sbg[c.seg]};color:${SC[c.seg]};border:0.5px solid ${SC[c.seg]}44">${SL[c.seg]}</div></div>
+    <div class="cckpis">
+      <div class="ck"><div class="ckl">Compras</div><div class="ckv" style="color:${SC[c.seg]}">${c.nd}</div></div>
+      <div class="ck"><div class="ckl">Total paid</div><div class="ckv">€${c.totalPaid.toLocaleString('es',{maximumFractionDigits:0})}</div></div>
+      <div class="ck"><div class="ckl">Avg ticket</div><div class="ckv">€${c.avgTicket.toFixed(0)}</div></div>
+      <div class="ck"><div class="ckl">Edad</div><div class="ckv">${c.edad!=null?c.edad+'a':'—'}</div></div>
+    </div>
+    <div class="cckpis">
+      <div class="ck"><div class="ckl">RFM</div><div class="ckv" style="font-size:10px">${esc(c.rfm)||'—'}</div></div>
+      <div class="ck"><div class="ckl">Rewards</div><div class="ckv" style="font-size:11px">${esc(c.rewards)||'—'}</div></div>
+      <div class="ck"><div class="ckl">Merchants</div><div class="ckv">${c.nMerchants||0}</div></div>
+      <div class="ck"><div class="ckl">Days entre compras</div><div class="ckv" style="font-size:11px">${c.avgDaysBetween!=null?Math.round(c.avgDaysBetween)+'d':'—'}</div></div>
+    </div>
+    ${c.deals.length?`<div class="ct" style="margin-bottom:6px">Deals (${c.deals.length})</div><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px"><tr style="border-bottom:0.5px solid var(--border)"><th style="text-align:left;padding:3px 7px;font-family:var(--m);font-size:9px;color:var(--muted);text-transform:uppercase">Solución</th><th style="text-align:left;padding:3px 7px;font-family:var(--m);font-size:9px;color:var(--muted);text-transform:uppercase">Merchant</th><th style="text-align:left;padding:3px 7px;font-family:var(--m);font-size:9px;color:var(--muted);text-transform:uppercase">€</th><th style="text-align:left;padding:3px 7px;font-family:var(--m);font-size:9px;color:var(--muted);text-transform:uppercase">Cuotas</th><th style="text-align:left;padding:3px 7px;font-family:var(--m);font-size:9px;color:var(--muted);text-transform:uppercase">Sector</th></tr>${c.deals.slice(0,8).map(d=>`<tr style="border-bottom:0.5px solid var(--border)"><td style="padding:5px 7px;color:var(--muted2)"><span class="tag ${d.sol==='Part Payment'?'pp':''}">${esc(d.sol)||'—'}</span></td><td style="padding:5px 7px;color:var(--muted2)">${esc(d.merch)||'—'}</td><td style="padding:5px 7px">€${d.amt.toFixed(0)}</td><td style="padding:5px 7px;color:var(--muted2)">${d.inst||'—'}</td><td style="padding:5px 7px;color:var(--muted2)">${esc(d.sector)||'—'}</td></tr>`).join('')}${c.deals.length>8?`<tr><td colspan="5" style="padding:5px 7px;color:var(--muted);font-size:9px;font-family:var(--m)">+${c.deals.length-8} más</td></tr>`:''}</table></div>`:''}
     </div>`;
   }).join('');
 }
 
-// ─── CHAT ────────────────────────────────────────────────────
+// ─── CHAT ─────────────────────────────────────────────────────
 function buildCtx(){
-  const tot=S.contacts.length;
-  const totalNoPP=Object.values(S.noPP).flat().length;
-  const sm={},solm={};S.deals.forEach(d=>{if(d.sector)sm[d.sector]=(sm[d.sector]||0)+1;if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
-  return`Base seQura (${tot.toLocaleString()} contactos). OT:${S.segs.ot.length}(${((S.segs.ot.length/tot)*100).toFixed(1)}%), OCC:${S.segs.occ.length}(${((S.segs.occ.length/tot)*100).toFixed(1)}%), REC:${S.segs.rec.length}(${((S.segs.rec.length/tot)*100).toFixed(1)}%), VIP:${S.segs.vip.length}(${((S.segs.vip.length/tot)*100).toFixed(1)}%). Sin PP:${totalNoPP}(${((totalNoPP/tot)*100).toFixed(1)}%). Deals:${S.deals.length}. Sectores:${Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([s,n])=>`${s}:${n}`).join(',')}. Sols:${Object.entries(solm).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([s,n])=>`${s}:${n}`).join(',')}. Part Payment es el producto clave de ingresos.`;
+  const tot=S.contacts.length;const noPP=Object.values(S.noPP).flat().length;
+  const solm={};S.deals.forEach(d=>{if(d.sol)solm[d.sol]=(solm[d.sol]||0)+1;});
+  const sectm={};S.deals.forEach(d=>{if(d.sector)sectm[d.sector]=(sectm[d.sector]||0)+1;});
+  const wApp=S.contacts.filter(c=>c.app&&c.app.toString().toLowerCase()==='sí').length;
+  const sNoPP=S.contacts.filter(c=>c.singleMerchant&&!c.hasPP&&c.deals.length>0).length;
+  return`seQura CRM (${tot.toLocaleString()} contactos). Seg: OT=${S.segs.ot.length}(${pct(S.segs.ot.length,tot)}%), OCC=${S.segs.occ.length}(${pct(S.segs.occ.length,tot)}%), REC=${S.segs.rec.length}(${pct(S.segs.rec.length,tot)}%), VIP=${S.segs.vip.length}(${pct(S.segs.vip.length,tot)}%). Sin PP:${noPP}(${pct(noPP,tot)}%). App:${pct(wApp,tot)}%. Single merchant sin PP:${sNoPP}. Deals:${S.deals.length}. Sols:${Object.entries(solm).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`${k}:${v}`).join(',')}. Sectores:${Object.entries(sectm).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>`${k}:${v}`).join(',')}. Seg: OT=1, OCC=2-5, REC=6-14, VIP≥15. Part Payment = producto clave ingresos.`;
 }
 async function sendMsg(){
   const inp=document.getElementById('cinp'),msg=inp.value.trim();
   if(!msg)return;inp.value='';document.getElementById('csend').disabled=true;
   addMsg('u',msg);S.chatH.push({role:'user',content:msg});const tid=addTyping();
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`Eres analista CRM y email marketing para seQura (BNPL, España). Responde en español, conciso y accionable. ${buildCtx()}`,messages:S.chatH})});
-    const d=await r.json();const rep=d.content?.[0]?.text||'Sin respuesta.';
-    rmT(tid);addMsg('b',rep);S.chatH.push({role:'assistant',content:rep});
-  }catch{rmT(tid);addMsg('b','Error de conexión.');}
+  try{const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`Eres analista CRM y email marketing para seQura (BNPL, España). Responde en español, conciso y accionable. ${buildCtx()}`,messages:S.chatH})});const d=await r.json();const rep=d.content?.[0]?.text||'Sin respuesta.';rmT(tid);addMsg('b',rep);S.chatH.push({role:'assistant',content:rep});}
+  catch{rmT(tid);addMsg('b','Error de conexión.');}
   document.getElementById('csend').disabled=false;
 }
 let tc=0;
 function addTyping(){const id='t'+(++tc),d=document.createElement('div');d.className='msg msgb';d.id=id;d.innerHTML=`<div class="bav">SQ</div><div class="bub"><span class="td"></span><span class="td"></span><span class="td"></span></div>`;document.getElementById('chatMsgs').appendChild(d);d.scrollIntoView({behavior:'smooth'});return id;}
 function rmT(id){document.getElementById(id)?.remove();}
-function addMsg(t,txt){
-  const d=document.createElement('div');d.className=`msg msg${t==='u'?'u':'b'}`;
-  if(t==='u')d.innerHTML=`<div class="bub">${esc(txt)}</div>`;
-  else{const f=txt.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');d.innerHTML=`<div class="bav">SQ</div><div class="bub">${f}</div>`;}
-  document.getElementById('chatMsgs').appendChild(d);d.scrollIntoView({behavior:'smooth'});
-}
+function addMsg(t,txt){const d=document.createElement('div');d.className=`msg msg${t==='u'?'u':'b'}`;if(t==='u')d.innerHTML=`<div class="bub">${esc(txt)}</div>`;else{const f=txt.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');d.innerHTML=`<div class="bav">SQ</div><div class="bub">${f}</div>`;}document.getElementById('chatMsgs').appendChild(d);d.scrollIntoView({behavior:'smooth'});}
 
-// ─── VIEWS ───────────────────────────────────────────────────
-function fSeg(s){
-  S.actSeg=s;
-  document.querySelectorAll('.spill').forEach(p=>p.classList.remove('on'));
-  document.getElementById(`sp-${s}`).classList.add('on');
-  renderOv(s);
-}
+// ─── VIEWS ────────────────────────────────────────────────────
+function fSeg(s){S.actSeg=s;document.querySelectorAll('.spill').forEach(p=>p.classList.remove('on'));document.getElementById(`sp-${s}`).classList.add('on');renderOv(s);}
 function showV(v){
-  const map={ov:'vOv',seg:'vSeg',pp:'vPP',sr:'vSr',ch:'vCh'};
+  const map={ov:'vOv',seg:'vSeg',pp:'vPP',merch:'vMerch',app:'vApp',sr:'vSr',ch:'vCh'};
   Object.entries(map).forEach(([k,id])=>{document.getElementById(id).style.display=k===v?(k==='ch'?'flex':'block'):'none';});
-  document.querySelectorAll('.rw > .vtabs .vt').forEach((t,i)=>{t.classList.toggle('on',['ov','seg','pp','sr','ch'][i]===v);});
-  if(v==='ch'&&!document.getElementById('chatMsgs').children.length)addMsg('b','¡Hola! Tengo los datos cargados. ¿Qué quieres analizar?');
+  document.querySelectorAll('.rw>.vtabs>.vt').forEach((t,i)=>{const keys=['ov','seg','pp','merch','app','sr','ch'];const visible=keys.filter(k=>k!=='app'||S.appEvents.length>0);t.classList.toggle('on',visible[i]===v);});
+  if(v==='ch'&&!document.getElementById('chatMsgs').children.length)addMsg('b','¡Hola! Datos cargados. ¿Qué quieres analizar?');
 }
 </script>
 </body>
